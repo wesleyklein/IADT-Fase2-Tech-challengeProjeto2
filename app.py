@@ -1,4 +1,4 @@
-"""Entrada compatível mantida para usuários da versão original."""
+"""Ponto principal da aplicação."""
 from ui.application import run_application
 
 if __name__ == "__main__":

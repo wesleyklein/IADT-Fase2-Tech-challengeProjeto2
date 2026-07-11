@@ -2,7 +2,7 @@
 
 import random
 import math
-import copy 
+import copy
 from typing import List, Tuple
 
 default_problems = {
@@ -52,7 +52,9 @@ def calculate_fitness(path: List[Tuple[float, float]]) -> float:
     Returns:
     float: The total Euclidean distance of the path.
     """
-    distance = 0
+    if len(path) < 2:
+        return 0.0
+    distance = 0.0
     n = len(path)
     for i in range(n):
         distance += calculate_distance(path[i], path[(i + 1) % n])
@@ -175,7 +177,7 @@ def sort_population(population: List[List[Tuple[float, float]]], fitness: List[f
     # Separate the sorted pairs back into individual lists
     sorted_population, sorted_fitness = zip(*sorted_combined_lists)
 
-    return sorted_population, sorted_fitness
+    return list(sorted_population), list(sorted_fitness)
 
 
 if __name__ == '__main__':
@@ -228,5 +230,4 @@ if __name__ == '__main__':
         print('generation: ', generation)
         population = new_population
     
-
 

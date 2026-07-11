@@ -1,94 +1,49 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Fri Dec 22 16:03:11 2023
+"""Funções de desenho reutilizáveis pela interface Pygame."""
+from typing import Sequence
 
-@author: SérgioPolimante
-"""
-import pylab
-import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_agg import FigureCanvasAgg
-import matplotlib
 import pygame
-from typing import List, Tuple
 
-matplotlib.use("Agg")
+Point = tuple[float, float]
 
 
-def draw_plot(screen: pygame.Surface, x: list, y: list, x_label: str = 'Generation', y_label: str = 'Fitness') -> None:
-    """
-    Draw a plot on a Pygame screen using Matplotlib.
-
-    Parameters:
-    - screen (pygame.Surface): The Pygame surface to draw the plot on.
-    - x (list): The x-axis values.
-    - y (list): The y-axis values.
-    - x_label (str): Label for the x-axis (default is 'Generation').
-    - y_label (str): Label for the y-axis (default is 'Fitness').
-    """
-    fig, ax = plt.subplots(figsize=(4, 4), dpi=100)
-    ax.plot(x, y)
-    ax.set_ylabel(y_label)
-    ax.set_xlabel(x_label)
-    plt.tight_layout()
-
+def create_plot_surface(x: Sequence[int], y: Sequence[float], size=(390, 240)) -> pygame.Surface:
+    """Cria uma imagem do gráfico; a figura Matplotlib é sempre fechada."""
+    fig, ax = plt.subplots(figsize=(size[0] / 100, size[1] / 100), dpi=100)
+    ax.plot(x, y, color="#2563eb", linewidth=1.5)
+    ax.set_xlabel("Geração")
+    ax.set_ylabel("Distância")
+    ax.grid(alpha=.2)
+    fig.tight_layout()
     canvas = FigureCanvasAgg(fig)
     canvas.draw()
-    renderer = canvas.get_renderer()
-    raw_data = renderer.tostring_rgb()
-
-    size = canvas.get_width_height()
-    surf = pygame.image.fromstring(raw_data, size, "RGB")
-    screen.blit(surf, (0, 0))
-    
-def draw_cities(screen: pygame.Surface, cities_locations: List[Tuple[int, int]], rgb_color: Tuple[int, int, int], node_radius: int) -> None:
-    """
-    Draws circles representing cities on the given Pygame screen.
-
-    Parameters:
-    - screen (pygame.Surface): The Pygame surface on which to draw the cities.
-    - cities_locations (List[Tuple[int, int]]): List of (x, y) coordinates representing the locations of cities.
-    - rgb_color (Tuple[int, int, int]): Tuple of three integers (R, G, B) representing the color of the city circles.
-    - node_radius (int): The radius of the city circles.
-
-    Returns:
-    None
-    """
-    for city_location in cities_locations:
-        pygame.draw.circle(screen, rgb_color, city_location, node_radius)
+    surface = pygame.image.frombuffer(canvas.buffer_rgba(), canvas.get_width_height(), "RGBA").copy()
+    plt.close(fig)
+    return surface
 
 
-
-def draw_paths(screen: pygame.Surface, path: List[Tuple[int, int]], rgb_color: Tuple[int, int, int], width: int = 1):
-    """
-    Draw a path on a Pygame screen.
-
-    Parameters:
-    - screen (pygame.Surface): The Pygame surface to draw the path on.
-    - path (List[Tuple[int, int]]): List of tuples representing the coordinates of the path.
-    - rgb_color (Tuple[int, int, int]): RGB values for the color of the path.
-    - width (int): Width of the path lines (default is 1).
-    """
-    pygame.draw.lines(screen, rgb_color, True, path, width=width)
+def draw_plot(screen, x, y, x_label="Geração", y_label="Distância") -> None:
+    """Mantém compatibilidade com o código legado."""
+    del x_label, y_label
+    screen.blit(create_plot_surface(x, y, (400, 400)), (0, 0))
 
 
-def draw_text(screen: pygame.Surface, text: str, color: pygame.Color) -> None:
-    """
-    Draw text on a Pygame screen.
+def draw_cities(screen: pygame.Surface, cities_locations: Sequence[Point], rgb_color, node_radius: int) -> None:
+    """Desenha as cidades."""
+    for city in cities_locations:
+        pygame.draw.circle(screen, rgb_color, (round(city[0]), round(city[1])), node_radius)
 
-    Parameters:
-    - screen (pygame.Surface): The Pygame surface to draw the text on.
-    - text (str): The text to be displayed.
-    - color (pygame.Color): The color of the text.
-    """
-    pygame.font.init()  # You have to call this at the start
 
-    font_size = 15
-    my_font = pygame.font.SysFont('Arial', font_size)
-    text_surface = my_font.render(text, False, color)
-    
-    cities_locations = []  # Assuming you have this list defined somewhere
-    text_position = (np.average(np.array(cities_locations)[:, 0]), HEIGHT - 1.5 * font_size)
-    
-    screen.blit(text_surface, text_position)
+def draw_paths(screen: pygame.Surface, path: Sequence[Point], rgb_color, width: int = 1) -> None:
+    """Desenha uma rota fechada."""
+    if len(path) >= 2:
+        pygame.draw.lines(screen, rgb_color, True, path, width=width)
 
+
+def draw_text(screen: pygame.Surface, text: str, color, position=(0, 0), font=None) -> None:
+    """Desenha texto sem depender de variáveis globais."""
+    selected_font = font or pygame.font.SysFont("Arial", 15)
+    screen.blit(selected_font.render(text, True, color), position)

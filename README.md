@@ -1,70 +1,80 @@
-# TSP Solver using Genetic Algorithm
+# Comparador interativo de algoritmos para o TSP
 
-This repository contains a Python implementation of a Traveling Salesman Problem (TSP) solver using a Genetic Algorithm (GA). The TSP is a classic problem in the field of combinatorial optimization, where the goal is to find the shortest possible route that visits a set of given cities exactly once and returns to the original city.
+Aplicação acadêmica que resolve o Problema do Caixeiro Viajante (TSP) no benchmark ATT48 e permite executar e comparar um Algoritmo Genético com a heurística do Vizinho Mais Próximo. O projeto evolui o código-base fornecido pela FIAP, preservando seu benchmark e suas operações genéticas.
 
-![alt text](image.png)
-![alt text](image-1.png)
-## Prerequisites
+## Algoritmos
 
-- Download and Install conda environment manager.
-  -  https://www.anaconda.com/download
-- Open the `Anaconda Prompt`
-- create the `fiap_tsp` environment
-  - `conda env create --file environment.yml`
-- activate the environment
-  - `conda activate fiap_tsp`  
+- **Algoritmo Genético:** população aleatória, seleção pelo inverso da distância, OX1 com dois pais, mutação e elitismo configurável.
+- **Vizinho Mais Próximo:** avalia cada cidade como início e seleciona a menor rota. É determinístico e sempre executado uma única vez.
+- **Comparar ambos:** executa as repetições do genético e uma execução do vizinho, exibindo distâncias, tempos, diferença e melhoria percentual.
 
-## How to Run
+## Instalação
 
-Execute the following command in your terminal to run the program:
-
-### Pygame
-```bash
-python tps.py
-```
-> Press the 'q' key to quit the program.
-
-
-
-## Overview
-
-The TSP solver employs a Genetic Algorithm to iteratively evolve a population of candidate solutions towards an optimal or near-optimal solution. The GA operates by mimicking the process of natural selection, where individuals with higher fitness (i.e., shorter route distance) are more likely to survive and produce offspring.
-
-## Files
-
-- **genetic_algorithm.py**: Contains the implementation of the Genetic Algorithm, including functions for generating random populations, calculating fitness, performing crossover and mutation operations, and sorting populations based on fitness.
-- **tsp.py**: Implements the main TSP solver using Pygame for visualization. It initializes the problem, creates the initial population, and iteratively evolves the population while visualizing the best solution found so far.
-- **draw_functions.py**: Provides functions for drawing cities, paths, and plots using Pygame.
-
-## Usage
-
-To run the TSP solver, execute the `tsp.py` script using Python. The solver allows you to choose between different problem instances:
-
-- Randomly generated cities
-- Default predefined problems with 10, 12, or 15 cities
-- `att48` benchmark dataset (uncomment relevant code in `tsp.py`)
-
-You can customize parameters such as population size, number of generations, and mutation probability directly in the `tsp.py` script.
-
-## Dependencies
-
-- Python 3.x
-- Pygame (for visualization)
-
-Ensure Pygame is installed before running the solver. You can install Pygame using pip:
+Requer Python 3.11 ou superior.
 
 ```bash
-pip install pygame
+python -m venv .venv
 ```
 
-## Acknowledgments
+Windows:
 
-This TSP solver was developed as a learning project and draws inspiration from various online resources and academic materials on Genetic Algorithms and the Traveling Salesman Problem. Special thanks to the authors of those resources for sharing their knowledge.
+```bash
+.venv\Scripts\activate
+```
 
-## License
+Linux/macOS:
 
-This project is licensed under the [MIT License](LICENSE).
+```bash
+source .venv/bin/activate
+```
 
----
+```bash
+pip install -r requirements.txt
+```
 
-Feel free to contribute to this repository by providing enhancements, bug fixes, or additional features. If you encounter any issues or have suggestions for improvements, please open an issue on the repository. Happy solving!
+O `requirements.txt` é a instalação oficial. O `environment.yml` permanece somente como referência do ambiente legado.
+
+## Execução e testes
+
+```bash
+python app.py
+pytest
+```
+
+`python tsp.py` também funciona como entrada compatível. Pressione `Q`, `Esc` ou feche a janela para sair. A janela permanece aberta ao terminar, pausar ou cancelar um processamento.
+
+## Parâmetros
+
+- **População:** número de rotas candidatas em cada geração.
+- **Gerações:** número de ciclos evolutivos de uma execução genética.
+- **Execuções:** repetições independentes; permitem medir variação estatística.
+- **Mutação:** probabilidade entre 0 e 1 de alterar um filho.
+- **Elitismo:** melhores indivíduos copiados para a geração seguinte.
+- **Semente:** valor opcional para reproduzir resultados. As repetições usam `semente + índice`.
+
+Os limites são população 2–10.000, gerações 1–100.000 e execuções 1–1.000. Erros são mostrados no painel e impedem o início.
+
+## Interface
+
+O painel esquerdo configura e controla `Processar`, `Pausar`, `Continuar`, `Cancelar` e `Limpar resultados`. O centro mostra o ATT48 e a melhor rota. O painel direito mostra progresso, estatísticas e gráfico de convergência. Em comparação, o seletor superior direito alterna a rota exibida.
+
+O processamento ocorre em pequenos lotes por frame para manter a janela responsiva. Após a conclusão, é possível iniciar outro experimento sem reiniciar o programa.
+
+## Estrutura
+
+```text
+app.py                    entrada principal
+optimizers/               contrato, genético e vizinho mais próximo
+execution/                modelos, estados, runner e estatísticas
+ui/                       aplicação Pygame/pygame_gui
+draw_functions.py         desenho e gráfico com descarte de figuras
+tests/                     testes comportamentais
+```
+
+## Limitações e próximas fases
+
+Esta fase usa distância euclidiana e um único veículo. Não inclui regras hospitalares, capacidade, autonomia, prioridades ou VRP. Essas restrições pertencem às próximas fases. Os resultados ficam em memória; exportação ainda não foi implementada.
+
+## Origem e licença
+
+Código-base educacional da FIAP, ampliado neste projeto. Consulte [LICENSE](LICENSE).
