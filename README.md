@@ -62,9 +62,11 @@ O processamento ocorre em pequenos lotes por frame para manter a janela responsi
 
 O seletor **Tipo** alterna entre `TSP / ATT48` e `Hospitalar / VRP`. No modo hospitalar, o seletor **Cenário** carrega os JSONs padrão. O mapa mostra o hospital, letras `C`, `A` e `R` para prioridades e cores estáveis por veículo.
 
+O controle **Exibir veículo** alterna entre todas as rotas e um veículo específico. **Exportar resultado** grava JSON e CSV; comparações exportam os dois algoritmos e cancelamentos exportam o melhor parcial disponível.
+
 ## Roteamento hospitalar
 
-O cromossomo genético é uma permutação dos IDs de entrega. Um decoder determinístico distribui essa rota gigante entre veículos, respeitando capacidade e autonomia com retorno ao hospital. A fitness combina distância, chegada ponderada pela prioridade, atrasos, excessos, não atendimento e equilíbrio das durações. O runner suporta AG, heurística determinística, comparação, pausa, continuação e parcial após cancelamento.
+O cromossomo genético é uma permutação dos IDs de entrega. Um decoder determinístico distribui essa rota gigante entre veículos, respeitando capacidade e autonomia com retorno ao hospital. A fitness combina distância, chegada ponderada pela prioridade, atrasos, excessos, não atendimento e equilíbrio das durações. A heurística constrói a sequência veículo a veículo, filtrando capacidade e autonomia antes de cada escolha e ponderando distância, prioridade e atraso. O runner suporta AG, heurística determinística, comparação, pausa, continuação e parcial após cancelamento.
 
 Os cenários oficiais ficam em `scenarios/data/default/`; cenários do usuário ficam em `scenarios/data/user/`. `ScenarioRepository` fornece carregamento, salvamento atômico, clone e exclusão segura. Importadores CSV aceitam veículos e entregas com validação transacional.
 

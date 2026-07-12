@@ -34,7 +34,7 @@ class ExperimentRunner:
     def _hospital_run(self,partial=False):
         solution=self.optimizer.get_best_solution(); metrics=()
         if solution is None:return None
-        metrics=tuple(HospitalGenerationMetric(i+1,cost,solution.total_distance_km,solution.total_delay_minutes,len(solution.unassigned_deliveries),sum(bool(r.stops) for r in solution.routes)) for i,cost in enumerate(self.optimizer.get_history()))
+        metrics=tuple(self.optimizer.get_metrics_history())
         return HospitalRunResult(self.current_execution,self._seed,tuple(self.optimizer.get_best_route()),solution,metrics,time.perf_counter()-self._started,partial)
     def _consolidate_hospital(self,algorithm,runs):
         best=min(runs,key=lambda x:x.solution.objective_cost); values=[r.solution.objective_cost for r in runs]
@@ -74,6 +74,19 @@ class ExperimentRunner:
     def get_snapshot(self):
         generation=getattr(self.optimizer,"generation",1 if self.optimizer and self.optimizer.is_finished() else 0); best=self.best_fitness
         return RunnerSnapshot(self.state,self.request.problem_type if self.request else None,self.request.algorithm_mode if self.request else None,self._phase,self.current_execution,(self.config.executions if self._phase=="genetic" and self.config else 1),generation,self.config.generations if self.config else 0,None if best==float("inf") else best,None if not self.result else (self.result.best_run.solution.objective_cost if hasattr(self.result.best_run,"solution") else self.result.best_run.best_fitness),(time.perf_counter()-self._started_total if self._started_total else 0.),self.message,self.partial_result,self.comparison or self.result)
+    def get_result(self):
+        return self.result
+    def get_comparison(self):
+        return self.comparison
+    def can_export(self):
+        return bool(self.partial_result or (self.request and self.request.problem_type is ProblemType.HOSPITAL and (self.result or self.comparison)))
+    def get_display_solution(self, selected="genetic"):
+        if self.partial_result:return self.partial_result.solution
+        if self.comparison and self.request.problem_type is ProblemType.HOSPITAL:
+            result=self.comparison.heuristic if selected=="heuristic" else self.comparison.genetic
+            return result.best_run.solution
+        if self.result and self.request.problem_type is ProblemType.HOSPITAL:return self.result.best_run.solution
+        return self.optimizer.get_best_solution() if self.optimizer and hasattr(self.optimizer,"get_best_solution") else None
     @property
     def best_route(self):return self.optimizer.get_best_route() if self.optimizer else []
     @property

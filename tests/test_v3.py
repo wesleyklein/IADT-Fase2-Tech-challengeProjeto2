@@ -28,3 +28,18 @@ def test_exports_json_and_single_csv_header(tmp_path):
     scenario=load_scenario("scenarios/data/default/hospital_viavel.json");r=ExperimentRunner();r.start(ExperimentRequest(ProblemType.HOSPITAL,AlgorithmMode.HEURISTIC,config(),hospital_scenario=scenario));finish(r);run=r.result.best_run
     path=export_hospital_json(scenario,"heuristic",config(),run,tmp_path);assert json.loads(path.read_text(encoding="utf-8"))["schema_version"]=="1.0"
     csv=append_experiment_csv(scenario,"heuristic",config(),run,tmp_path);append_experiment_csv(scenario,"heuristic",config(),run,tmp_path);assert csv.read_text(encoding="utf-8").count("timestamp")==1
+
+def test_generation_metrics_are_recorded_by_optimizer():
+    scenario=load_scenario("scenarios/data/default/hospital_viavel.json");r=ExperimentRunner();r.start(ExperimentRequest(ProblemType.HOSPITAL,AlgorithmMode.GENETIC,replace(config(),generations=4),hospital_scenario=scenario));finish(r)
+    metrics=r.result.best_run.history
+    assert [x.generation for x in metrics]==[1,2,3,4]
+    assert len(metrics)==4 and all(x.objective_cost>0 for x in metrics)
+
+def test_high_demand_has_required_size_and_fleet():
+    scenario=load_scenario("scenarios/data/default/hospital_alta_demanda.json")
+    assert 30<=len(scenario.deliveries)<=50 and 4<=len(scenario.vehicles)<=6
+
+def test_display_solution_selects_both_comparison_results():
+    scenario=load_scenario("scenarios/data/default/hospital_viavel.json");r=ExperimentRunner();r.start(ExperimentRequest(ProblemType.HOSPITAL,AlgorithmMode.COMPARE,config(),hospital_scenario=scenario));finish(r)
+    assert r.get_display_solution("genetic") is r.comparison.genetic.best_run.solution
+    assert r.get_display_solution("heuristic") is r.comparison.heuristic.best_run.solution

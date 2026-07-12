@@ -10,6 +10,7 @@ from execution import (ExecutionConfig, ExperimentRunner, ProcessingState, Probl
                        AlgorithmMode, ExperimentRequest)
 from scenarios import list_scenarios, load_scenario
 from ui.hospital_renderer import draw_hospital_solution
+from execution.exporter import export_hospital_json, append_experiment_csv
 
 WIDTH, HEIGHT = 1500, 850
 GENERATIONS_PER_FRAME = 10
@@ -17,6 +18,7 @@ ALGORITHMS = ["Algoritmo Genético", "Vizinho Mais Próximo", "Comparar ambos"]
 PROBLEM_TYPES=["TSP / ATT48","Hospitalar / VRP"]
 ROUTE_GENETIC = "genetic"
 ROUTE_NEAREST = "nearest"
+ROUTE_HEURISTIC = "heuristic"
 
 
 def _dropdown_value(dropdown) -> str:
@@ -50,6 +52,7 @@ class Application:
         self.scenario_paths=list_scenarios(); self.current_scenario=load_scenario(self.scenario_paths[0]) if self.scenario_paths else None
         self.selected_route=ROUTE_GENETIC
         self.started_at=None; self.ended_at=None
+        self.paused_at=None; self.paused_seconds=0.0
         self._build_controls()
 
     def _label(self, text, y):
@@ -65,6 +68,9 @@ class Application:
         scenario_names=[p.stem for p in self.scenario_paths] or ["Nenhum cenário"]
         self._label("Cenário",477)
         self.scenario_dropdown=pygame_gui.elements.UIDropDownMenu(scenario_names,scenario_names[0],pygame.Rect(165,477,225,35),self.manager)
+        self._label("Exibir veículo",519)
+        vehicle_names=["Todas as rotas"]+[v.name for v in self.current_scenario.vehicles] if self.current_scenario else ["Todas as rotas"]
+        self.vehicle_dropdown=pygame_gui.elements.UIDropDownMenu(vehicle_names,vehicle_names[0],pygame.Rect(165,519,225,35),self.manager)
         self._label("Algoritmo", 20)
         self.algorithm=pygame_gui.elements.UIDropDownMenu(ALGORITHMS, ALGORITHMS[0], pygame.Rect(165,20,225,35), self.manager)
         fields=[("População","100"),("Gerações","500"),("Execuções","3"),("Mutação","0.10"),("Elitismo","1"),("Semente","")]
@@ -73,6 +79,7 @@ class Application:
             y=70+i*42; self._label(name,y); self.entries[name]=self._entry(value,y)
         labels=[("Processar",15,340),("Pausar",145,340),("Continuar",275,340),("Cancelar",15,385),("Limpar resultados",210,385)]
         self.buttons={name:pygame_gui.elements.UIButton(pygame.Rect(x,y,120 if name!="Limpar resultados" else 180,35),name,self.manager) for name,x,y in labels}
+        self.buttons["Exportar resultado"]=pygame_gui.elements.UIButton(pygame.Rect(15,570,180,35),"Exportar resultado",self.manager)
         self.route_buttons = {
             ROUTE_GENETIC: pygame_gui.elements.UIButton(
                 pygame.Rect(1180, 565, 140, 35), "Rota Genética", self.manager
@@ -112,32 +119,86 @@ class Application:
             elif button is self.route_buttons[ROUTE_NEAREST]:
                 self._select_route(ROUTE_NEAREST)
             elif button==self.buttons["Processar"]:
-                self.runner.start(self._request()); self.started_at=time.perf_counter(); self.ended_at=None; self.plot=None; self.plot_generation=-1; self.selected_route=ROUTE_GENETIC
+                self.runner.start(self._request()); self.started_at=time.perf_counter(); self.ended_at=None; self.paused_at=None; self.paused_seconds=0.0; self.plot=None; self.plot_generation=-1; self.selected_route=ROUTE_GENETIC
                 self._update_route_buttons()
-            elif button==self.buttons["Pausar"]: self.runner.pause(); self._refresh_plot(True)
-            elif button==self.buttons["Continuar"]: self.runner.resume()
+            elif button==self.buttons["Pausar"]:
+                was_running=self.runner.state is ProcessingState.RUNNING
+                self.runner.pause()
+                if was_running and self.runner.state is ProcessingState.PAUSED:
+                    self.paused_at=time.perf_counter()
+                self._refresh_plot(True)
+            elif button==self.buttons["Continuar"]:
+                was_paused=self.runner.state is ProcessingState.PAUSED
+                self.runner.resume()
+                if was_paused and self.runner.state is ProcessingState.RUNNING and self.paused_at is not None:
+                    self.paused_seconds+=time.perf_counter()-self.paused_at
+                    self.paused_at=None
             elif button==self.buttons["Cancelar"]:
                 self.runner.cancel(); self._stop_timer(); self._refresh_plot(True)
             elif button==self.buttons["Limpar resultados"]:
-                self.runner.clear(); self.plot=None; self.started_at=None; self.ended_at=None; self.selected_route=ROUTE_GENETIC
+                self.runner.clear(); self.plot=None; self.started_at=None; self.ended_at=None; self.paused_at=None; self.paused_seconds=0.0; self.selected_route=ROUTE_GENETIC
                 self._update_route_buttons()
+            elif button==self.buttons["Exportar resultado"]:
+                self._export_result()
         except (ValueError, TypeError) as error:
             self.runner.fail(error)
 
     def _select_route(self, route_name):
         """Seleciona uma das duas rotas consolidadas da comparação."""
-        if self.runner.comparison and route_name in (ROUTE_GENETIC, ROUTE_NEAREST):
-            self.selected_route=route_name
+        if self.runner.get_comparison() and route_name in (ROUTE_GENETIC, ROUTE_NEAREST):
+            self.selected_route=(ROUTE_HEURISTIC if route_name==ROUTE_NEAREST and self.runner.get_snapshot().problem_type is ProblemType.HOSPITAL else route_name)
             self._update_route_buttons()
 
     def _update_route_buttons(self):
         selected = self.selected_route
+        hospital=self.runner.get_snapshot().problem_type is ProblemType.HOSPITAL
         self.route_buttons[ROUTE_GENETIC].set_text(
             "✓ Rota Genética" if selected == ROUTE_GENETIC else "Rota Genética"
         )
-        self.route_buttons[ROUTE_NEAREST].set_text(
-            "✓ Rota Vizinho" if selected == ROUTE_NEAREST else "Rota Vizinho"
-        )
+        heuristic_selected=selected in (ROUTE_NEAREST,ROUTE_HEURISTIC)
+        label="Rota Heurística" if hospital else "Rota Vizinho"
+        self.route_buttons[ROUTE_NEAREST].set_text(("✓ " if heuristic_selected else "")+label)
+
+    def _get_displayed_hospital_solution(self):
+        return self.runner.get_display_solution(self.selected_route)
+
+    def _selected_vehicle_id(self):
+        if not self.current_scenario:return None
+        selected=_dropdown_value(self.vehicle_dropdown)
+        vehicle=next((v for v in self.current_scenario.vehicles if v.name==selected),None)
+        return vehicle.id if vehicle else None
+
+    def _export_result(self):
+        if not self.runner.can_export():
+            self.runner.message="Não há resultado hospitalar para exportar."
+            return
+        try:
+            comparison=self.runner.get_comparison()
+            if self.runner.partial_result:runs=[("partial",self.runner.partial_result)]
+            elif comparison:
+                runs=[("genetic",comparison.genetic.best_run),("heuristic",comparison.heuristic.best_run)]
+            else:runs=[(self.runner.get_snapshot().algorithm_mode.value,self.runner.get_result().best_run)]
+            paths=[]
+            for algorithm,run in runs:
+                paths.append(str(export_hospital_json(self.current_scenario,algorithm,self.runner.config,run)))
+                append_experiment_csv(self.current_scenario,algorithm,self.runner.config,run)
+            self.runner.message="Resultado exportado com sucesso: "+", ".join(paths)
+        except Exception as error:
+            self.runner.message=f"Falha ao exportar: {error}"
+
+    def _build_tsp_result_lines(self,result):
+        return [f"Melhor distância: {result.best_run.best_fitness:,.2f}",f"Distância média: {result.average_fitness:,.2f}",f"Pior distância: {result.worst_fitness:,.2f}",f"Desvio-padrão: {result.standard_deviation:,.2f}",f"Tempo médio: {result.average_elapsed_seconds:.2f} s",f"Melhor execução: {result.best_run.execution_number}"]
+
+    def _build_hospital_result_lines(self,result):
+        run=result.best_run; solution=run.solution; delivered=sum(len(route.stops) for route in solution.routes); used=sum(bool(route.stops) for route in solution.routes)
+        return [f"Custo objetivo: {solution.objective_cost:,.2f}",f"Distância total: {solution.total_distance_km:,.2f} km",f"Duração total: {solution.total_duration_minutes:,.2f} min",f"Atraso total: {solution.total_delay_minutes:,.2f} min",f"Entregas atendidas: {delivered}",f"Não atendidas: {len(solution.unassigned_deliveries)}",f"Veículos utilizados: {used}",f"Média do custo: {result.average_objective_cost:,.2f}",f"Pior custo: {result.worst_objective_cost:,.2f}",f"Desvio-padrão: {result.standard_deviation:,.2f}",f"Tempo médio: {result.average_elapsed_seconds:.2f} s",f"Melhor execução: {run.execution_number}"]
+
+    def _build_tsp_comparison_lines(self,c):
+        return ["COMPARAÇÃO",f"Genético: {c.genetic.best_run.best_fitness:,.2f}",f"Vizinho: {c.nearest.best_run.best_fitness:,.2f}",f"Diferença: {c.absolute_difference:,.2f}",f"Melhoria do AG: {c.improvement_percentage:.2f}%"]
+
+    def _build_hospital_comparison_lines(self,c):
+        g=c.genetic.best_run.solution; h=c.heuristic.best_run.solution
+        return ["COMPARAÇÃO HOSPITALAR",f"AG custo: {g.objective_cost:,.2f}",f"AG distância: {g.total_distance_km:,.2f}",f"AG atraso: {g.total_delay_minutes:,.2f}",f"Heurística custo: {h.objective_cost:,.2f}",f"Heurística distância: {h.total_distance_km:,.2f}",f"Heurística atraso: {h.total_delay_minutes:,.2f}",f"Diferença custo: {c.objective_difference:,.2f}",f"Melhoria AG: {c.improvement_percentage:.2f}%",f"Diferença distância: {c.distance_difference_km:,.2f}",f"Diferença atraso: {c.delay_difference_minutes:,.2f}",f"Diferença não atendidas: {c.unassigned_difference}"]
 
     def _refresh_plot(self, force=False):
         history=self.runner.history
@@ -150,6 +211,16 @@ class Application:
         """Congela o cronômetro na primeira conclusão ou cancelamento."""
         if self.started_at is not None and self.ended_at is None:
             self.ended_at = time.perf_counter()
+
+    def _elapsed_time(self):
+        """Retorna apenas o tempo efetivo de processamento, excluindo pausas."""
+        if self.started_at is None:
+            return 0.0
+        end=self.ended_at if self.ended_at is not None else time.perf_counter()
+        paused=self.paused_seconds
+        if self.paused_at is not None:
+            paused+=end-self.paused_at
+        return max(0.0,end-self.started_at-paused)
 
     def _route(self):
         route=self.runner.best_route
@@ -168,7 +239,7 @@ class Application:
         elif self.runner.state == ProcessingState.ERROR:
             text = "Algoritmo: não iniciado"
         elif self.runner.comparison:
-            name = "Vizinho Mais Próximo" if self.selected_route == ROUTE_NEAREST else "Algoritmo Genético"
+            name = ("Heurística Hospitalar" if self.selected_route == ROUTE_HEURISTIC else "Vizinho Mais Próximo") if self.selected_route in (ROUTE_NEAREST,ROUTE_HEURISTIC) else "Algoritmo Genético"
             text = f"Rota exibida: {name}"
         elif self.runner.get_snapshot().current_phase in ("nearest","heuristic"):
             text = "Processando: Vizinho Mais Próximo"
@@ -183,14 +254,11 @@ class Application:
         if self.runner.config: lines += [f"Execução: {snapshot.current_execution} de {snapshot.total_executions}",f"Geração: {snapshot.current_generation} de {snapshot.total_generations}"]
         if self.runner.best_fitness != float("inf"): lines.append(f"Melhor atual: {self.runner.best_fitness:,.2f}")
         if self.started_at:
-            timer_end = self.ended_at if self.ended_at is not None else time.perf_counter()
-            lines.append(f"Tempo decorrido: {timer_end-self.started_at:.2f} s")
-        if self.runner.result:
-            r=self.runner.result
-            lines += ["",f"Melhor distância: {r.best_run.best_fitness:,.2f}",f"Distância média: {r.average_fitness:,.2f}",f"Pior distância: {r.worst_fitness:,.2f}",f"Desvio-padrão: {r.standard_deviation:,.2f}",f"Tempo médio: {r.average_elapsed_seconds:.2f} s",f"Melhor execução: {r.best_run.execution_number}"]
-        if self.runner.comparison:
-            c=self.runner.comparison; lines += ["","COMPARAÇÃO",f"Genético: {c.genetic.best_run.best_fitness:,.2f}",f"Vizinho: {c.nearest.best_run.best_fitness:,.2f}",f"Diferença: {c.absolute_difference:,.2f}",f"Melhoria do AG: {c.improvement_percentage:.2f}%"]
-            if c.improvement_percentage<0: lines.append("O AG encontrou uma solução pior.")
+            lines.append(f"Tempo decorrido: {self._elapsed_time():.2f} s")
+        result=self.runner.get_result(); comparison=self.runner.get_comparison()
+        if result: lines += [""]+(self._build_hospital_result_lines(result) if snapshot.problem_type is ProblemType.HOSPITAL else self._build_tsp_result_lines(result))
+        if comparison: lines += [""]+(self._build_hospital_comparison_lines(comparison) if snapshot.problem_type is ProblemType.HOSPITAL else self._build_tsp_comparison_lines(comparison))
+        if comparison and comparison.improvement_percentage<0: lines.append("O AG encontrou uma solução pior.")
         if self.runner.message: lines += ["",self.runner.message]
         return lines
 
@@ -198,13 +266,13 @@ class Application:
         self._update_algorithm_label()
         snapshot=self.runner.get_snapshot()
         self.screen.fill((245,247,250)); pygame.draw.rect(self.screen,(255,255,255),(410,20,770,810)); pygame.draw.rect(self.screen,(255,255,255),(1170,70,315,760))
-        hospital_solution=self.runner.optimizer.get_best_solution() if snapshot.problem_type is ProblemType.HOSPITAL and self.runner.optimizer else None
+        hospital_solution=self._get_displayed_hospital_solution() if snapshot.problem_type is ProblemType.HOSPITAL else None
         route=[] if hospital_solution else self._route()
-        if hospital_solution: draw_hospital_solution(self.screen,self.current_scenario,hospital_solution,pygame.Rect(410,20,770,810),self.font)
+        if hospital_solution: draw_hospital_solution(self.screen,self.current_scenario,hospital_solution,pygame.Rect(410,20,770,810),self.font,vehicle_id=self._selected_vehicle_id())
         elif route:
             route_color = (234, 88, 12) if self.selected_route == ROUTE_NEAREST and self.runner.comparison else (37,99,235)
             draw_paths(self.screen,route,route_color,3)
-        draw_cities(self.screen,self.display_cities,(220,38,38),5)
+        if snapshot.problem_type is not ProblemType.HOSPITAL: draw_cities(self.screen,self.display_cities,(220,38,38),5)
         if self.plot: self.screen.blit(self.plot,(1185,615))
         for i,line in enumerate(self._lines()): draw_text(self.screen,line,(25,30,40),(1190,85+i*25),self.font)
         self.manager.draw_ui(self.screen); pygame.display.flip()
