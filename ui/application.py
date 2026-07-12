@@ -25,6 +25,36 @@ ROUTE_GENETIC = "genetic"
 ROUTE_NEAREST = "nearest"
 ROUTE_HEURISTIC = "heuristic"
 
+PARAMETER_SCOPE_AG = ("AG",)
+PARAMETER_SCOPE_H = ("H",)
+PARAMETER_SCOPE_BOTH = ("AG", "H")
+
+# Nome interno, valor inicial e algoritmos aos quais o parâmetro se aplica.
+# A estrutura aceita parâmetros [AG], [H] e [AG][H].
+PARAMETER_FIELDS = (
+    ("População", "100", PARAMETER_SCOPE_AG),
+    ("Gerações", "500", PARAMETER_SCOPE_AG),
+    ("Execuções", "3", PARAMETER_SCOPE_AG),
+    ("Mutação", "0.10", PARAMETER_SCOPE_AG),
+    ("Elitismo", "1", PARAMETER_SCOPE_AG),
+    ("Semente", "", PARAMETER_SCOPE_AG),
+)
+
+
+def _parameter_label(name: str, scopes: tuple[str, ...]) -> str:
+    # Monta o rótulo visual, por exemplo [AG] ou [AG][H].
+    prefix = "".join(f"[{scope}]" for scope in scopes)
+    return f"{prefix} {name}".strip()
+
+
+def _active_parameter_scopes(algorithm: str) -> frozenset[str]:
+    # Informa quais grupos de parâmetros estão ativos na seleção atual.
+    if algorithm == ALGORITHMS[0]:
+        return frozenset(PARAMETER_SCOPE_AG)
+    if algorithm == ALGORITHMS[1]:
+        return frozenset(PARAMETER_SCOPE_H)
+    return frozenset(PARAMETER_SCOPE_BOTH)
+
 
 def _dropdown_value(dropdown) -> str:
     """Obtém o texto selecionado em diferentes versões do pygame_gui.
@@ -68,20 +98,29 @@ class Application:
         entry.set_text(value); return entry
 
     def _build_controls(self):
-        self._label("Tipo", 435)
+        self._label(_parameter_label("Tipo", PARAMETER_SCOPE_BOTH), 435)
         self.problem_type=pygame_gui.elements.UIDropDownMenu(PROBLEM_TYPES,PROBLEM_TYPES[0],pygame.Rect(165,435,225,35),self.manager)
         scenario_names=[p.stem for p in self.scenario_paths] or ["Nenhum cenário"]
-        self._label("Cenário",477)
+        self._label(_parameter_label("Cenário", PARAMETER_SCOPE_BOTH),477)
         self.scenario_dropdown=pygame_gui.elements.UIDropDownMenu(scenario_names,scenario_names[0],pygame.Rect(165,477,225,35),self.manager)
         self._label("Exibir veículo",519)
         vehicle_names=["Todas as rotas"]+[v.name for v in self.current_scenario.vehicles] if self.current_scenario else ["Todas as rotas"]
         self.vehicle_dropdown=pygame_gui.elements.UIDropDownMenu(vehicle_names,vehicle_names[0],pygame.Rect(165,519,225,35),self.manager)
         self._label("Algoritmo", 20)
         self.algorithm=pygame_gui.elements.UIDropDownMenu(ALGORITHMS, ALGORITHMS[0], pygame.Rect(165,20,225,35), self.manager)
-        fields=[("População","100"),("Gerações","500"),("Execuções","3"),("Mutação","0.10"),("Elitismo","1"),("Semente","")]
         self.entries={}
-        for i,(name,value) in enumerate(fields):
-            y=70+i*42; self._label(name,y); self.entries[name]=self._entry(value,y)
+        self.parameter_scopes={}
+        for i,(name,value,scopes) in enumerate(PARAMETER_FIELDS):
+            y=70+i*42
+            self._label(_parameter_label(name,scopes),y)
+            self.entries[name]=self._entry(value,y)
+            self.parameter_scopes[name]=frozenset(scopes)
+        self.parameter_legend=pygame_gui.elements.UILabel(
+            pygame.Rect(15,310,375,25),
+            "[AG] Genético    [H] Heurístico",
+            self.manager,
+        )
+        self._update_parameter_states()
         labels=[("Processar",15,340),("Pausar",145,340),("Continuar",275,340),("Cancelar",15,385),("Limpar resultados",210,385)]
         self.buttons={name:pygame_gui.elements.UIButton(pygame.Rect(x,y,120 if name!="Limpar resultados" else 180,35),name,self.manager) for name,x,y in labels}
         self.buttons["Exportar resultado"]=pygame_gui.elements.UIButton(pygame.Rect(15,570,180,35),"Exportar resultado",self.manager)
@@ -103,10 +142,35 @@ class Application:
             self.manager,
         )
 
+    def _update_parameter_states(self):
+        # Habilita somente os campos aplicáveis ao algoritmo selecionado.
+        active_scopes=_active_parameter_scopes(_dropdown_value(self.algorithm))
+        for name,entry in self.entries.items():
+            if self.parameter_scopes[name] & active_scopes:
+                entry.enable()
+            else:
+                entry.disable()
+
     def _config(self):
+        algorithm=_dropdown_value(self.algorithm)
+
+        # A heurística atual é determinística e não consome os parâmetros do AG.
+        # Usar os valores padrão impede que um texto inválido em campo [AG]
+        # bloqueie uma execução exclusivamente heurística.
+        if algorithm == ALGORITHMS[1]:
+            return ExecutionConfig(algorithm=algorithm)
+
         def integer(name): return int(self.entries[name].get_text())
         seed=self.entries["Semente"].get_text().strip()
-        return ExecutionConfig(_dropdown_value(self.algorithm), integer("População"), integer("Gerações"), integer("Execuções"), float(self.entries["Mutação"].get_text().replace(",",".")), integer("Elitismo"), int(seed) if seed else None)
+        return ExecutionConfig(
+            algorithm=algorithm,
+            population_size=integer("População"),
+            generations=integer("Gerações"),
+            executions=integer("Execuções"),
+            mutation_probability=float(self.entries["Mutação"].get_text().replace(",",".")),
+            elite_count=integer("Elitismo"),
+            random_seed=int(seed) if seed else None,
+        )
 
     def _request(self):
         config=self._config(); algorithm=_dropdown_value(self.algorithm)
@@ -291,7 +355,13 @@ class Application:
                 is_button_event = (event.type == pygame_gui.UI_BUTTON_PRESSED or
                                    getattr(event, "user_type", None) == pygame_gui.UI_BUTTON_PRESSED)
                 if is_button_event: self._click(event.ui_element)
+                is_dropdown_event = (
+                    event.type == pygame_gui.UI_DROP_DOWN_MENU_CHANGED or
+                    getattr(event, "user_type", None) == pygame_gui.UI_DROP_DOWN_MENU_CHANGED
+                )
                 self.manager.process_events(event)
+                if is_dropdown_event and event.ui_element is self.algorithm:
+                    self._update_parameter_states()
             self.runner.step(GENERATIONS_PER_FRAME)
             if self.runner.state in (ProcessingState.FINISHED, ProcessingState.CANCELLED, ProcessingState.ERROR):
                 self._stop_timer()
