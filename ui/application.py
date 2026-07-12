@@ -13,6 +13,18 @@ GENERATIONS_PER_FRAME = 10
 ALGORITHMS = ["Algoritmo Genético", "Vizinho Mais Próximo", "Comparar ambos"]
 
 
+def _dropdown_value(dropdown) -> str:
+    """Obtém o texto selecionado em diferentes versões do pygame_gui.
+
+    Algumas versões retornam uma string e outras retornam uma tupla contendo
+    o texto exibido e um identificador interno.
+    """
+    selected = dropdown.selected_option
+    if isinstance(selected, tuple):
+        return str(selected[0])
+    return str(selected)
+
+
 def _scaled_cities(cities):
     """Ajusta o ATT48 à região central sem alterar distâncias usadas no cálculo."""
     left, top, width, height = 430, 55, 730, 735
@@ -28,7 +40,8 @@ class Application:
         self.screen=pygame.display.set_mode((WIDTH, HEIGHT)); self.manager=pygame_gui.UIManager((WIDTH, HEIGHT))
         self.clock=pygame.time.Clock(); self.font=pygame.font.SysFont("Arial", 17)
         self.cities=list(att_48_cities_locations); self.display_cities=_scaled_cities(self.cities)
-        self.runner=ExperimentRunner(self.cities); self.plot=None; self.plot_generation=-1; self.started_at=None
+        self.runner=ExperimentRunner(self.cities); self.plot=None; self.plot_generation=-1
+        self.started_at=None; self.ended_at=None
         self._build_controls()
 
     def _label(self, text, y):
@@ -47,36 +60,67 @@ class Application:
             y=70+i*42; self._label(name,y); self.entries[name]=self._entry(value,y)
         labels=[("Processar",15,340),("Pausar",145,340),("Continuar",275,340),("Cancelar",15,385),("Limpar resultados",210,385)]
         self.buttons={name:pygame_gui.elements.UIButton(pygame.Rect(x,y,120 if name!="Limpar resultados" else 180,35),name,self.manager) for name,x,y in labels}
-        self.route_choice=pygame_gui.elements.UIDropDownMenu(["Algoritmo Genético","Vizinho Mais Próximo"],"Algoritmo Genético",pygame.Rect(1180,20,285,35),self.manager)
+        # Indicador somente de leitura: o algoritmo ativo é controlado pelo
+        # runner, portanto não deve parecer uma opção que o usuário precisa
+        # alterar durante o processamento.
+        self.processing_algorithm_label=pygame_gui.elements.UILabel(
+            pygame.Rect(1180,20,285,35),
+            "Algoritmo: aguardando processamento",
+            self.manager,
+        )
 
     def _config(self):
         def integer(name): return int(self.entries[name].get_text())
         seed=self.entries["Semente"].get_text().strip()
-        return ExecutionConfig(self.algorithm.selected_option, integer("População"), integer("Gerações"), integer("Execuções"), float(self.entries["Mutação"].get_text().replace(",",".")), integer("Elitismo"), int(seed) if seed else None)
+        return ExecutionConfig(_dropdown_value(self.algorithm), integer("População"), integer("Gerações"), integer("Execuções"), float(self.entries["Mutação"].get_text().replace(",",".")), integer("Elitismo"), int(seed) if seed else None)
 
     def _click(self, button):
         try:
             if button==self.buttons["Processar"]:
-                self.runner.start(self._config()); self.started_at=time.perf_counter(); self.plot=None; self.plot_generation=-1
+                self.runner.start(self._config()); self.started_at=time.perf_counter(); self.ended_at=None; self.plot=None; self.plot_generation=-1
             elif button==self.buttons["Pausar"]: self.runner.pause(); self._refresh_plot(True)
             elif button==self.buttons["Continuar"]: self.runner.resume()
-            elif button==self.buttons["Cancelar"]: self.runner.cancel(); self._refresh_plot(True)
-            elif button==self.buttons["Limpar resultados"]: self.runner.clear(); self.plot=None; self.started_at=None
+            elif button==self.buttons["Cancelar"]:
+                self.runner.cancel(); self._stop_timer(); self._refresh_plot(True)
+            elif button==self.buttons["Limpar resultados"]:
+                self.runner.clear(); self.plot=None; self.started_at=None; self.ended_at=None
         except (ValueError, TypeError) as error:
             self.runner.state=ProcessingState.ERROR; self.runner.message=str(error)
 
     def _refresh_plot(self, force=False):
         history=self.runner.history
-        if history and (force or len(history)-self.plot_generation>=10):
+        history_changed = len(history) != self.plot_generation
+        periodic_refresh = len(history) - self.plot_generation >= 10
+        if history and history_changed and (force or periodic_refresh):
             self.plot=create_plot_surface(range(1,len(history)+1),history,(285,230)); self.plot_generation=len(history)
+
+    def _stop_timer(self):
+        """Congela o cronômetro na primeira conclusão ou cancelamento."""
+        if self.started_at is not None and self.ended_at is None:
+            self.ended_at = time.perf_counter()
 
     def _route(self):
         route=self.runner.best_route
         if self.runner.comparison:
-            result=self.runner.comparison.nearest if self.route_choice.selected_option=="Vizinho Mais Próximo" else self.runner.comparison.genetic
-            route=result.best_run.best_route
+            # Ao concluir a comparação, mantém visível a melhor rota genética,
+            # que é o resultado principal consolidado.
+            route=self.runner.comparison.genetic.best_run.best_route
         index={city:i for i,city in enumerate(self.cities)}
         return [self.display_cities[index[city]] for city in route]
+
+    def _update_algorithm_label(self):
+        """Atualiza o texto da direita conforme a fase realmente executada."""
+        if self.runner.state == ProcessingState.IDLE:
+            text = "Algoritmo: aguardando processamento"
+        elif self.runner.state == ProcessingState.ERROR:
+            text = "Algoritmo: não iniciado"
+        elif self.runner.comparison:
+            text = "Rota exibida: Algoritmo Genético"
+        elif self.runner._phase == "nearest":
+            text = "Processando: Vizinho Mais Próximo"
+        else:
+            text = "Processando: Algoritmo Genético"
+        self.processing_algorithm_label.set_text(text)
 
     def _lines(self):
         state_names={"idle":"Aguardando","running":"Processando","paused":"Pausado","finished":"Concluído","cancelled":"Cancelado","error":"Erro"}
@@ -86,7 +130,9 @@ class Application:
             gen=getattr(self.runner.optimizer,"generation",1 if self.runner.optimizer and self.runner.optimizer.is_finished() else 0)
             lines += [f"Execução: {self.runner.current_execution} de {total}",f"Geração: {gen} de {self.runner.config.generations}"]
         if self.runner.best_fitness != float("inf"): lines.append(f"Melhor atual: {self.runner.best_fitness:,.2f}")
-        if self.started_at: lines.append(f"Tempo decorrido: {time.perf_counter()-self.started_at:.2f} s")
+        if self.started_at:
+            timer_end = self.ended_at if self.ended_at is not None else time.perf_counter()
+            lines.append(f"Tempo decorrido: {timer_end-self.started_at:.2f} s")
         if self.runner.result:
             r=self.runner.result
             lines += ["",f"Melhor distância: {r.best_run.best_fitness:,.2f}",f"Distância média: {r.average_fitness:,.2f}",f"Pior distância: {r.worst_fitness:,.2f}",f"Desvio-padrão: {r.standard_deviation:,.2f}",f"Tempo médio: {r.average_elapsed_seconds:.2f} s",f"Melhor execução: {r.best_run.execution_number}"]
@@ -97,6 +143,7 @@ class Application:
         return lines
 
     def draw(self):
+        self._update_algorithm_label()
         self.screen.fill((245,247,250)); pygame.draw.rect(self.screen,(255,255,255),(410,20,770,810)); pygame.draw.rect(self.screen,(255,255,255),(1170,70,315,760))
         route=self._route()
         if route: draw_paths(self.screen,route,(37,99,235),3)
@@ -113,7 +160,10 @@ class Application:
                 if event.type==pygame.QUIT or (event.type==pygame.KEYDOWN and event.key in (pygame.K_q,pygame.K_ESCAPE)): application_running=False
                 if event.type==pygame_gui.UI_BUTTON_PRESSED: self._click(event.ui_element)
                 self.manager.process_events(event)
-            self.runner.step(GENERATIONS_PER_FRAME); self._refresh_plot(self.runner.state in (ProcessingState.FINISHED,ProcessingState.CANCELLED))
+            self.runner.step(GENERATIONS_PER_FRAME)
+            if self.runner.state in (ProcessingState.FINISHED, ProcessingState.CANCELLED, ProcessingState.ERROR):
+                self._stop_timer()
+            self._refresh_plot(self.runner.state in (ProcessingState.FINISHED,ProcessingState.CANCELLED))
             self.manager.update(delta); self.draw()
         pygame.quit()
 

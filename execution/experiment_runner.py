@@ -19,10 +19,13 @@ class ExperimentRunner:
         self.message=""; self._phase=""
 
     def start(self, config):
-        config.validate(); self.clear(); self.config=config; self.state=ProcessingState.RUNNING
+        config.validate(); self.clear()
+        algorithm = config.algorithm[0] if isinstance(config.algorithm, tuple) else config.algorithm
+        config = replace(config, algorithm=algorithm)
+        self.config=config; self.state=ProcessingState.RUNNING
         # O prefixo também tolera terminais Windows que substituem acentos ao
         # fornecer parâmetros, sem alterar os textos em português da interface.
-        self._phase = "nearest" if config.algorithm.startswith("Vizinho Mais") else "genetic"
+        self._phase = "nearest" if algorithm.startswith("Vizinho Mais") else "genetic"
         self._start_run()
 
     def _start_run(self):

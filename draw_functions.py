@@ -3,8 +3,8 @@ from typing import Sequence
 
 import matplotlib
 matplotlib.use("Agg")
-import matplotlib.pyplot as plt
 from matplotlib.backends.backend_agg import FigureCanvasAgg
+from matplotlib.figure import Figure
 import pygame
 
 Point = tuple[float, float]
@@ -12,16 +12,17 @@ Point = tuple[float, float]
 
 def create_plot_surface(x: Sequence[int], y: Sequence[float], size=(390, 240)) -> pygame.Surface:
     """Cria uma imagem do gráfico; a figura Matplotlib é sempre fechada."""
-    fig, ax = plt.subplots(figsize=(size[0] / 100, size[1] / 100), dpi=100)
+    fig = Figure(figsize=(size[0] / 100, size[1] / 100), dpi=100)
+    canvas = FigureCanvasAgg(fig)
+    ax = fig.add_subplot(111)
     ax.plot(x, y, color="#2563eb", linewidth=1.5)
     ax.set_xlabel("Geração")
     ax.set_ylabel("Distância")
     ax.grid(alpha=.2)
     fig.tight_layout()
-    canvas = FigureCanvasAgg(fig)
     canvas.draw()
     surface = pygame.image.frombuffer(canvas.buffer_rgba(), canvas.get_width_height(), "RGBA").copy()
-    plt.close(fig)
+    fig.clear()
     return surface
 
 
