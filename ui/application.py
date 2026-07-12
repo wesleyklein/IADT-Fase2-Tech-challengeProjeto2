@@ -12,7 +12,7 @@ from scenarios import list_scenarios, load_scenario
 from ui.hospital_renderer import draw_hospital_solution
 from execution.exporter import export_hospital_json, append_experiment_csv
 
-WIDTH, HEIGHT = 1500, 850
+WIDTH, HEIGHT = 1500, 980
 GENERATIONS_PER_FRAME = 10
 ALGORITHMS = ["Algoritmo Genético", "Vizinho Mais Próximo", "Comparar ambos"]
 PROBLEM_TYPES=["TSP / ATT48","Hospitalar / VRP"]
@@ -82,10 +82,10 @@ class Application:
         self.buttons["Exportar resultado"]=pygame_gui.elements.UIButton(pygame.Rect(15,570,180,35),"Exportar resultado",self.manager)
         self.route_buttons = {
             ROUTE_GENETIC: pygame_gui.elements.UIButton(
-                pygame.Rect(1180, 565, 140, 35), "Rota Genética", self.manager
+                pygame.Rect(15, 615, 180, 35), "Rota Genética", self.manager
             ),
             ROUTE_NEAREST: pygame_gui.elements.UIButton(
-                pygame.Rect(1330, 565, 140, 35), "Rota Vizinho", self.manager
+                pygame.Rect(210, 615, 180, 35), "Rota Vizinho", self.manager
             ),
         }
         self._update_route_buttons()
