@@ -1,6 +1,6 @@
-# Comparador interativo de algoritmos para o TSP
+# Comparador TSP e roteamento hospitalar
 
-Aplicação acadêmica que resolve o Problema do Caixeiro Viajante (TSP) no benchmark ATT48 e permite executar e comparar um Algoritmo Genético com a heurística do Vizinho Mais Próximo. O projeto evolui o código-base fornecido pela FIAP, preservando seu benchmark e suas operações genéticas.
+Aplicação acadêmica que preserva o TSP/ATT48 e acrescenta um VRP hospitalar com múltiplos veículos, capacidade, autonomia, prioridades, prazos e entregas não atendidas.
 
 ## Algoritmos
 
@@ -60,6 +60,16 @@ O painel esquerdo configura e controla `Processar`, `Pausar`, `Continuar`, `Canc
 
 O processamento ocorre em pequenos lotes por frame para manter a janela responsiva. Após a conclusão, é possível iniciar outro experimento sem reiniciar o programa.
 
+O seletor **Tipo** alterna entre `TSP / ATT48` e `Hospitalar / VRP`. No modo hospitalar, o seletor **Cenário** carrega os JSONs padrão. O mapa mostra o hospital, letras `C`, `A` e `R` para prioridades e cores estáveis por veículo.
+
+## Roteamento hospitalar
+
+O cromossomo genético é uma permutação dos IDs de entrega. Um decoder determinístico distribui essa rota gigante entre veículos, respeitando capacidade e autonomia com retorno ao hospital. A fitness combina distância, chegada ponderada pela prioridade, atrasos, excessos, não atendimento e equilíbrio das durações. O runner suporta AG, heurística determinística, comparação, pausa, continuação e parcial após cancelamento.
+
+Os cenários oficiais ficam em `scenarios/data/default/`; cenários do usuário ficam em `scenarios/data/user/`. `ScenarioRepository` fornece carregamento, salvamento atômico, clone e exclusão segura. Importadores CSV aceitam veículos e entregas com validação transacional.
+
+`execution/exporter.py` gera JSON detalhado, preparado para consumo futuro por LLM, e acrescenta experimentos a `results/experiments.csv` com cabeçalho único. Nenhuma LLM é utilizada nesta etapa.
+
 ## Estrutura
 
 ```text
@@ -73,7 +83,7 @@ tests/                     testes comportamentais
 
 ## Limitações e próximas fases
 
-Esta fase usa distância euclidiana e um único veículo. Não inclui regras hospitalares, capacidade, autonomia, prioridades ou VRP. Essas restrições pertencem às próximas fases. Os resultados ficam em memória; exportação ainda não foi implementada.
+As distâncias são euclidianas e não representam vias reais, trânsito ou geocodificação. Os dados são fictícios e ficam em arquivos; não há banco, cloud, API, LLM ou dados de pacientes. A próxima etapa poderá consumir o JSON exportado para explicações em linguagem natural.
 
 ## Origem e licença
 

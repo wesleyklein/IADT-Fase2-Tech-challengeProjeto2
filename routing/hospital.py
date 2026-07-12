@@ -1,30 +1,23 @@
 """Decodificação determinística e fitness hospitalar."""
-from dataclasses import dataclass
 import math, statistics
 from domain import *
+
+EPSILON=1e-9
 
 def euclidean_distance_km(ax, ay, bx, by): return math.hypot(bx-ax, by-ay)
 def travel_time_minutes(distance_km, average_speed_kmh):
     if average_speed_kmh <= 0: raise ValueError("Velocidade deve ser positiva")
     return distance_km / average_speed_kmh * 60.0
 
-@dataclass(frozen=True)
-class HospitalFitnessWeights:
-    distance_weight: float=1.; priority_arrival_weight: float=.2; delay_weight: float=50.
-    critical_delay_multiplier: float=5.; high_delay_multiplier: float=3.; regular_delay_multiplier: float=1.
-    capacity_excess_weight: float=10_000.; autonomy_excess_weight: float=10_000.
-    unassigned_delivery_weight: float=1_000_000.; route_balance_weight: float=2.
-
 class HospitalRouteDecoder:
-    def __init__(self, weights=None): self.weights=weights or HospitalFitnessWeights()
+    def __init__(self, weights=None): self.weights=weights
     def decode(self, chromosome, scenario):
+        self.weights=self.weights or scenario.fitness_weights
         ids=[d.id for d in scenario.deliveries]
         if len(chromosome)!=len(ids) or set(chromosome)!=set(ids): raise ValueError("Cromossomo deve ser uma permutação completa e sem duplicações")
         by_id={d.id:d for d in scenario.deliveries}; assigned={v.id:[] for v in scenario.vehicles}; unassigned=[]
         depot=scenario.depot
-        def route_distance(stops):
-            points=[(depot.x_km,depot.y_km)]+[(d.x_km,d.y_km) for d in stops]+[(depot.x_km,depot.y_km)]
-            return sum(euclidean_distance_km(*a,*b) for a,b in zip(points,points[1:]))
+        state={v.id:{"load":0.,"open":0.,"closed":0.,"time":0.,"last":(depot.x_km,depot.y_km)} for v in scenario.vehicles}
         for delivery_id in chromosome:
             d=by_id[delivery_id]
             if all(d.weight_kg>v.capacity_kg for v in scenario.vehicles):
@@ -34,14 +27,20 @@ class HospitalRouteDecoder:
                 unassigned.append(UnassignedDelivery(d,UnassignedReason.EXCEEDS_ALL_VEHICLE_AUTONOMIES,"Ida e volta excedem todas as autonomias")); continue
             candidates=[]
             for v in scenario.vehicles:
-                current=assigned[v.id]; load=sum(x.weight_kg for x in current)+d.weight_kg
-                newdist=route_distance(current+[d])
+                s=state[v.id]; load=s["load"]+d.weight_kg
+                leg=euclidean_distance_km(*s["last"],d.x_km,d.y_km)
+                back=euclidean_distance_km(d.x_km,d.y_km,depot.x_km,depot.y_km)
+                newdist=s["open"]+leg+back
                 if load<=v.capacity_kg and newdist<=v.autonomy_km:
-                    inc=newdist-route_distance(current); arrival=travel_time_minutes(newdist/2,v.average_speed_kmh)
-                    cost=inc+arrival*int(d.priority)*.2+(load/v.capacity_kg)
+                    inc=newdist-s["closed"]; arrival=s["time"]+travel_time_minutes(leg,v.average_speed_kmh)
+                    cost=inc+arrival*int(d.priority)*self.weights.priority_arrival_weight+(load/v.capacity_kg)
                     candidates.append((cost,inc,load/v.capacity_kg,v.id,v))
             if not candidates: unassigned.append(UnassignedDelivery(d,UnassignedReason.NO_FEASIBLE_INSERTION,"Não há inserção viável"))
-            else: assigned[min(candidates)[-1].id].append(d)
+            else:
+                v=min(candidates)[-1]; s=state[v.id]; leg=euclidean_distance_km(*s["last"],d.x_km,d.y_km)
+                s["load"]+=d.weight_kg; s["open"]+=leg; s["closed"]=s["open"]+euclidean_distance_km(d.x_km,d.y_km,depot.x_km,depot.y_km)
+                s["time"]+=travel_time_minutes(leg,v.average_speed_kmh)+d.service_time_minutes; s["last"]=(d.x_km,d.y_km)
+                assigned[v.id].append(d)
         routes=[]
         for v in scenario.vehicles:
             current=(depot.x_km,depot.y_km); elapsed=distance=load=0.; stops=[]
@@ -61,9 +60,9 @@ class HospitalRouteDecoder:
         unas=sum(w.unassigned_delivery_weight*int(x.delivery.priority) for x in unassigned)
         used=[r.total_duration_minutes for r in routes if r.stops]; balance=(statistics.pstdev(used)*w.route_balance_weight if len(used)>1 else 0.)
         objective=total_distance*w.distance_weight+priority+delay_pen+cap+auto+unas+balance
-        return HospitalRoutingSolution(tuple(chromosome),tuple(routes),tuple(unassigned),total_distance,total_duration,delay,priority,delay_pen,cap,auto,unas,balance,objective,not unassigned and cap==0 and auto==0)
+        return HospitalRoutingSolution(tuple(chromosome),tuple(routes),tuple(unassigned),total_distance,total_duration,delay,priority,delay_pen,cap,auto,unas,balance,objective,not unassigned and cap<=EPSILON and auto<=EPSILON)
 
 class HospitalRoutingEvaluator:
-    def __init__(self, scenario, weights=None): self.scenario=scenario; self.decoder=HospitalRouteDecoder(weights)
+    def __init__(self, scenario, weights=None): self.scenario=scenario; self.decoder=HospitalRouteDecoder(weights or scenario.fitness_weights)
     def evaluate(self, chromosome): return self.decode(chromosome).objective_cost
     def decode(self, chromosome): return self.decoder.decode(chromosome,self.scenario)

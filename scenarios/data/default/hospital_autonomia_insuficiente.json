@@ -1,0 +1,1 @@
+{"id":"hospital_autonomia_insuficiente","name":"Autonomia insuficiente","depot":{"id":"H","name":"Hospital","x_km":0,"y_km":0},"vehicles":[{"id":1,"name":"Van","capacity_kg":100,"autonomy_km":20,"average_speed_kmh":50}],"deliveries":[{"id":1,"name":"Destino remoto","x_km":30,"y_km":0,"weight_kg":10,"priority":"CRITICAL","service_time_minutes":5,"deadline_minutes":60}]}

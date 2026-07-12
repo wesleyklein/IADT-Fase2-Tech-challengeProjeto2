@@ -1,0 +1,1 @@
+{"id":"hospital_capacidade_insuficiente","name":"Capacidade insuficiente","depot":{"id":"H","name":"Hospital","x_km":0,"y_km":0},"vehicles":[{"id":1,"name":"Moto","capacity_kg":20,"autonomy_km":100,"average_speed_kmh":40}],"deliveries":[{"id":1,"name":"Carga pesada","x_km":2,"y_km":2,"weight_kg":50,"priority":"HIGH","service_time_minutes":5,"deadline_minutes":60}]}

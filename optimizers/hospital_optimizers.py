@@ -1,6 +1,7 @@
 """Otimizadores incrementais para o cenário hospitalar."""
 import random
 from routing import HospitalRoutingEvaluator
+from .base_optimizer import RouteOptimizer
 
 def _ox1(a,b,rng):
     if len(a)<2: return list(a)
@@ -9,7 +10,7 @@ def _ox1(a,b,rng):
     for i,x in zip(positions,remaining): child[i]=x
     return child
 
-class HospitalGeneticOptimizer:
+class HospitalGeneticOptimizer(RouteOptimizer):
     def initialize(self, scenario, config):
         self.scenario=scenario; self.config=config; self.evaluator=HospitalRoutingEvaluator(scenario); self.random=random.Random(config.random_seed)
         genes=[d.id for d in scenario.deliveries]; self.population=[self.random.sample(genes,len(genes)) for _ in range(config.population_size)]
@@ -31,8 +32,9 @@ class HospitalGeneticOptimizer:
     def get_best_route(self): return list(self.best_route)
     def get_best_fitness(self): return self.best_fitness
     def get_history(self): return list(self.history)
+    def get_best_solution(self): return self.best_solution
 
-class HospitalGreedyOptimizer:
+class HospitalGreedyOptimizer(RouteOptimizer):
     def initialize(self, scenario, config):
         self.scenario=scenario; self.config=config; self.finished=False; self.history=[]; self.best_route=[]; self.best_fitness=float("inf"); self.best_solution=None
     def step(self):
@@ -48,3 +50,4 @@ class HospitalGreedyOptimizer:
     def get_best_route(self): return list(self.best_route)
     def get_best_fitness(self): return self.best_fitness
     def get_history(self): return list(self.history)
+    def get_best_solution(self): return self.best_solution

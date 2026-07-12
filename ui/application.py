@@ -6,11 +6,15 @@ import pygame_gui
 
 from benchmark_att48 import att_48_cities_locations
 from draw_functions import create_plot_surface, draw_cities, draw_paths, draw_text
-from execution import ExecutionConfig, ExperimentRunner, ProcessingState
+from execution import (ExecutionConfig, ExperimentRunner, ProcessingState, ProblemType,
+                       AlgorithmMode, ExperimentRequest)
+from scenarios import list_scenarios, load_scenario
+from ui.hospital_renderer import draw_hospital_solution
 
 WIDTH, HEIGHT = 1500, 850
 GENERATIONS_PER_FRAME = 10
 ALGORITHMS = ["Algoritmo Genético", "Vizinho Mais Próximo", "Comparar ambos"]
+PROBLEM_TYPES=["TSP / ATT48","Hospitalar / VRP"]
 ROUTE_GENETIC = "genetic"
 ROUTE_NEAREST = "nearest"
 
@@ -42,7 +46,8 @@ class Application:
         self.screen=pygame.display.set_mode((WIDTH, HEIGHT)); self.manager=pygame_gui.UIManager((WIDTH, HEIGHT))
         self.clock=pygame.time.Clock(); self.font=pygame.font.SysFont("Arial", 17)
         self.cities=list(att_48_cities_locations); self.display_cities=_scaled_cities(self.cities)
-        self.runner=ExperimentRunner(self.cities); self.plot=None; self.plot_generation=-1
+        self.runner=ExperimentRunner(); self.plot=None; self.plot_generation=-1
+        self.scenario_paths=list_scenarios(); self.current_scenario=load_scenario(self.scenario_paths[0]) if self.scenario_paths else None
         self.selected_route=ROUTE_GENETIC
         self.started_at=None; self.ended_at=None
         self._build_controls()
@@ -55,6 +60,11 @@ class Application:
         entry.set_text(value); return entry
 
     def _build_controls(self):
+        self._label("Tipo", 435)
+        self.problem_type=pygame_gui.elements.UIDropDownMenu(PROBLEM_TYPES,PROBLEM_TYPES[0],pygame.Rect(165,435,225,35),self.manager)
+        scenario_names=[p.stem for p in self.scenario_paths] or ["Nenhum cenário"]
+        self._label("Cenário",477)
+        self.scenario_dropdown=pygame_gui.elements.UIDropDownMenu(scenario_names,scenario_names[0],pygame.Rect(165,477,225,35),self.manager)
         self._label("Algoritmo", 20)
         self.algorithm=pygame_gui.elements.UIDropDownMenu(ALGORITHMS, ALGORITHMS[0], pygame.Rect(165,20,225,35), self.manager)
         fields=[("População","100"),("Gerações","500"),("Execuções","3"),("Mutação","0.10"),("Elitismo","1"),("Semente","")]
@@ -86,6 +96,13 @@ class Application:
         seed=self.entries["Semente"].get_text().strip()
         return ExecutionConfig(_dropdown_value(self.algorithm), integer("População"), integer("Gerações"), integer("Execuções"), float(self.entries["Mutação"].get_text().replace(",",".")), integer("Elitismo"), int(seed) if seed else None)
 
+    def _request(self):
+        config=self._config(); algorithm=_dropdown_value(self.algorithm)
+        mode=AlgorithmMode.COMPARE if algorithm=="Comparar ambos" else (AlgorithmMode.HEURISTIC if algorithm.startswith("Vizinho") else AlgorithmMode.GENETIC)
+        if _dropdown_value(self.problem_type)==PROBLEM_TYPES[0]:return ExperimentRequest(ProblemType.TSP,mode,config,tuple(self.cities))
+        selected=_dropdown_value(self.scenario_dropdown); path=next(p for p in self.scenario_paths if p.stem==selected);self.current_scenario=load_scenario(path)
+        return ExperimentRequest(ProblemType.HOSPITAL,mode,config,hospital_scenario=self.current_scenario)
+
     def _click(self, button):
         try:
             # Trata primeiro os seletores de rota. A comparação por identidade
@@ -95,7 +112,7 @@ class Application:
             elif button is self.route_buttons[ROUTE_NEAREST]:
                 self._select_route(ROUTE_NEAREST)
             elif button==self.buttons["Processar"]:
-                self.runner.start(self._config()); self.started_at=time.perf_counter(); self.ended_at=None; self.plot=None; self.plot_generation=-1; self.selected_route=ROUTE_GENETIC
+                self.runner.start(self._request()); self.started_at=time.perf_counter(); self.ended_at=None; self.plot=None; self.plot_generation=-1; self.selected_route=ROUTE_GENETIC
                 self._update_route_buttons()
             elif button==self.buttons["Pausar"]: self.runner.pause(); self._refresh_plot(True)
             elif button==self.buttons["Continuar"]: self.runner.resume()
@@ -105,7 +122,7 @@ class Application:
                 self.runner.clear(); self.plot=None; self.started_at=None; self.ended_at=None; self.selected_route=ROUTE_GENETIC
                 self._update_route_buttons()
         except (ValueError, TypeError) as error:
-            self.runner.state=ProcessingState.ERROR; self.runner.message=str(error)
+            self.runner.fail(error)
 
     def _select_route(self, route_name):
         """Seleciona uma das duas rotas consolidadas da comparação."""
@@ -153,7 +170,7 @@ class Application:
         elif self.runner.comparison:
             name = "Vizinho Mais Próximo" if self.selected_route == ROUTE_NEAREST else "Algoritmo Genético"
             text = f"Rota exibida: {name}"
-        elif self.runner._phase == "nearest":
+        elif self.runner.get_snapshot().current_phase in ("nearest","heuristic"):
             text = "Processando: Vizinho Mais Próximo"
         else:
             text = "Processando: Algoritmo Genético"
@@ -162,10 +179,8 @@ class Application:
     def _lines(self):
         state_names={"idle":"Aguardando","running":"Processando","paused":"Pausado","finished":"Concluído","cancelled":"Cancelado","error":"Erro"}
         lines=[f"Status: {state_names[self.runner.state.value]}"]
-        if self.runner.config:
-            total=1 if self.runner._phase=="nearest" else self.runner.config.executions
-            gen=getattr(self.runner.optimizer,"generation",1 if self.runner.optimizer and self.runner.optimizer.is_finished() else 0)
-            lines += [f"Execução: {self.runner.current_execution} de {total}",f"Geração: {gen} de {self.runner.config.generations}"]
+        snapshot=self.runner.get_snapshot()
+        if self.runner.config: lines += [f"Execução: {snapshot.current_execution} de {snapshot.total_executions}",f"Geração: {snapshot.current_generation} de {snapshot.total_generations}"]
         if self.runner.best_fitness != float("inf"): lines.append(f"Melhor atual: {self.runner.best_fitness:,.2f}")
         if self.started_at:
             timer_end = self.ended_at if self.ended_at is not None else time.perf_counter()
@@ -181,9 +196,12 @@ class Application:
 
     def draw(self):
         self._update_algorithm_label()
+        snapshot=self.runner.get_snapshot()
         self.screen.fill((245,247,250)); pygame.draw.rect(self.screen,(255,255,255),(410,20,770,810)); pygame.draw.rect(self.screen,(255,255,255),(1170,70,315,760))
-        route=self._route()
-        if route:
+        hospital_solution=self.runner.optimizer.get_best_solution() if snapshot.problem_type is ProblemType.HOSPITAL and self.runner.optimizer else None
+        route=[] if hospital_solution else self._route()
+        if hospital_solution: draw_hospital_solution(self.screen,self.current_scenario,hospital_solution,pygame.Rect(410,20,770,810),self.font)
+        elif route:
             route_color = (234, 88, 12) if self.selected_route == ROUTE_NEAREST and self.runner.comparison else (37,99,235)
             draw_paths(self.screen,route,route_color,3)
         draw_cities(self.screen,self.display_cities,(220,38,38),5)

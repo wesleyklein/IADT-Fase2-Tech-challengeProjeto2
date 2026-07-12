@@ -3,6 +3,20 @@ from dataclasses import dataclass
 from enum import Enum, IntEnum
 import math
 
+@dataclass(frozen=True)
+class HospitalFitnessWeights:
+    distance_weight: float=1.; priority_arrival_weight: float=.2; delay_weight: float=50.
+    critical_delay_multiplier: float=5.; high_delay_multiplier: float=3.; regular_delay_multiplier: float=1.
+    capacity_excess_weight: float=10_000.; autonomy_excess_weight: float=10_000.
+    unassigned_delivery_weight: float=1_000_000.; route_balance_weight: float=2.
+    def __post_init__(self):
+        values=(self.distance_weight,self.priority_arrival_weight,self.delay_weight,
+                self.capacity_excess_weight,self.autonomy_excess_weight,
+                self.unassigned_delivery_weight,self.route_balance_weight)
+        multipliers=(self.critical_delay_multiplier,self.high_delay_multiplier,self.regular_delay_multiplier)
+        if any(not math.isfinite(x) or x < 0 for x in values): raise ValueError("Pesos da fitness devem ser finitos e não negativos")
+        if any(not math.isfinite(x) or x <= 0 for x in multipliers): raise ValueError("Multiplicadores de atraso devem ser positivos")
+
 class DeliveryPriority(IntEnum):
     REGULAR = 1
     HIGH = 3
@@ -26,7 +40,9 @@ class Delivery:
     id: int; name: str; x_km: float; y_km: float; weight_kg: float
     priority: DeliveryPriority; service_time_minutes: float; deadline_minutes: float
     def __post_init__(self):
+        if self.id <= 0: raise ValueError("ID da entrega deve ser positivo")
         if not self.name.strip(): raise ValueError("Entrega deve possuir nome")
+        if not isinstance(self.priority, DeliveryPriority): raise ValueError("Prioridade da entrega é inválida")
         _coordinate(self.x_km,"x_km"); _coordinate(self.y_km,"y_km"); _positive(self.weight_kg,"weight_kg")
         if not math.isfinite(self.service_time_minutes) or self.service_time_minutes < 0: raise ValueError("service_time_minutes deve ser não negativo")
         _positive(self.deadline_minutes,"deadline_minutes")
@@ -35,16 +51,20 @@ class Delivery:
 class Vehicle:
     id: int; name: str; capacity_kg: float; autonomy_km: float; average_speed_kmh: float
     def __post_init__(self):
+        if self.id <= 0: raise ValueError("ID do veículo deve ser positivo")
         if not self.name.strip(): raise ValueError("Veículo deve possuir nome")
         _positive(self.capacity_kg,"capacity_kg"); _positive(self.autonomy_km,"autonomy_km"); _positive(self.average_speed_kmh,"average_speed_kmh")
 
 @dataclass(frozen=True)
 class HospitalScenario:
     id: str; name: str; depot: Depot; deliveries: tuple[Delivery,...]; vehicles: tuple[Vehicle,...]
+    fitness_weights: HospitalFitnessWeights=HospitalFitnessWeights()
     def __post_init__(self):
         if not self.id.strip() or not self.name.strip(): raise ValueError("Cenário deve possuir id e nome")
         if not self.deliveries: raise ValueError("Cenário deve possuir entregas")
         if not self.vehicles: raise ValueError("Cenário deve possuir veículos")
+        if any(x is None for x in self.deliveries): raise ValueError("Entrega nula")
+        if any(x is None for x in self.vehicles): raise ValueError("Veículo nulo")
         if len({x.id for x in self.deliveries}) != len(self.deliveries): raise ValueError("IDs de entrega duplicados")
         if len({x.id for x in self.vehicles}) != len(self.vehicles): raise ValueError("IDs de veículo duplicados")
 

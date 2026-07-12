@@ -6,6 +6,9 @@ from enum import Enum
 class ProcessingState(Enum):
     IDLE="idle"; RUNNING="running"; PAUSED="paused"; FINISHED="finished"; CANCELLED="cancelled"; ERROR="error"
 
+class ProblemType(Enum): TSP="tsp"; HOSPITAL="hospital"
+class AlgorithmMode(Enum): GENETIC="genetic"; HEURISTIC="heuristic"; COMPARE="compare"
+
 
 @dataclass(frozen=True)
 class ExecutionConfig:
@@ -42,3 +45,32 @@ class ExperimentResult:
 class ComparisonResult:
     genetic: ExperimentResult; nearest: ExperimentResult
     absolute_difference: float; improvement_percentage: float
+
+@dataclass(frozen=True)
+class ExperimentRequest:
+    problem_type: ProblemType; algorithm_mode: AlgorithmMode; execution_config: ExecutionConfig
+    tsp_cities: tuple | None=None; hospital_scenario: object | None=None
+    def validate(self):
+        self.execution_config.validate()
+        if self.problem_type is ProblemType.TSP and (not self.tsp_cities or self.hospital_scenario is not None): raise ValueError("TSP exige somente tsp_cities")
+        if self.problem_type is ProblemType.HOSPITAL and (self.hospital_scenario is None or self.tsp_cities is not None): raise ValueError("Hospital exige somente hospital_scenario")
+
+@dataclass(frozen=True)
+class HospitalGenerationMetric:
+    generation:int; objective_cost:float; total_distance_km:float; total_delay_minutes:float; unassigned_count:int; vehicles_used:int
+@dataclass(frozen=True)
+class HospitalRunResult:
+    execution_number:int; seed:int|None; chromosome:tuple; solution:object; history:tuple; elapsed_seconds:float; is_partial:bool=False
+@dataclass(frozen=True)
+class HospitalExperimentResult:
+    algorithm:str; runs:tuple; best_run:HospitalRunResult; average_objective_cost:float; worst_objective_cost:float; standard_deviation:float; average_elapsed_seconds:float
+@dataclass(frozen=True)
+class HospitalComparisonResult:
+    genetic:HospitalExperimentResult; heuristic:HospitalExperimentResult; objective_difference:float; improvement_percentage:float
+    distance_difference_km:float; delay_difference_minutes:float; unassigned_difference:int
+@dataclass(frozen=True)
+class RunnerSnapshot:
+    state:ProcessingState; problem_type:ProblemType|None; algorithm_mode:AlgorithmMode|None; current_phase:str
+    current_execution:int; total_executions:int; current_generation:int; total_generations:int
+    current_best_cost:float|None; global_best_cost:float|None; elapsed_seconds:float; message:str
+    partial_result:object|None; final_result:object|None
