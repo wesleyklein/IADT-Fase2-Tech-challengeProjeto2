@@ -14,6 +14,11 @@ from execution.exporter import export_hospital_json, append_experiment_csv
 
 WIDTH, HEIGHT = 1500, 980
 GENERATIONS_PER_FRAME = 10
+
+# Gráfico de evolução: centralizado na coluna esquerda e abaixo dos botões de rota.
+PLOT_SIZE = (285, 230)
+PLOT_POSITION = (62, 665)
+
 ALGORITHMS = ["Algoritmo Genético", "Vizinho Mais Próximo", "Comparar ambos"]
 PROBLEM_TYPES=["TSP / ATT48","Hospitalar / VRP"]
 ROUTE_GENETIC = "genetic"
@@ -205,7 +210,7 @@ class Application:
         history_changed = len(history) != self.plot_generation
         periodic_refresh = len(history) - self.plot_generation >= 10
         if history and history_changed and (force or periodic_refresh):
-            self.plot=create_plot_surface(range(1,len(history)+1),history,(285,230)); self.plot_generation=len(history)
+            self.plot=create_plot_surface(range(1,len(history)+1),history,PLOT_SIZE); self.plot_generation=len(history)
 
     def _stop_timer(self):
         """Congela o cronômetro na primeira conclusão ou cancelamento."""
@@ -273,7 +278,7 @@ class Application:
             route_color = (234, 88, 12) if self.selected_route == ROUTE_NEAREST and self.runner.comparison else (37,99,235)
             draw_paths(self.screen,route,route_color,3)
         if snapshot.problem_type is not ProblemType.HOSPITAL: draw_cities(self.screen,self.display_cities,(220,38,38),5)
-        if self.plot: self.screen.blit(self.plot,(1185,615))
+        if self.plot: self.screen.blit(self.plot,PLOT_POSITION)
         for i,line in enumerate(self._lines()): draw_text(self.screen,line,(25,30,40),(1190,85+i*25),self.font)
         self.manager.draw_ui(self.screen); pygame.display.flip()
 
