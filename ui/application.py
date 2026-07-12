@@ -11,6 +11,8 @@ from execution import ExecutionConfig, ExperimentRunner, ProcessingState
 WIDTH, HEIGHT = 1500, 850
 GENERATIONS_PER_FRAME = 10
 ALGORITHMS = ["Algoritmo Genético", "Vizinho Mais Próximo", "Comparar ambos"]
+ROUTE_GENETIC = "genetic"
+ROUTE_NEAREST = "nearest"
 
 
 def _dropdown_value(dropdown) -> str:
@@ -41,6 +43,7 @@ class Application:
         self.clock=pygame.time.Clock(); self.font=pygame.font.SysFont("Arial", 17)
         self.cities=list(att_48_cities_locations); self.display_cities=_scaled_cities(self.cities)
         self.runner=ExperimentRunner(self.cities); self.plot=None; self.plot_generation=-1
+        self.selected_route=ROUTE_GENETIC
         self.started_at=None; self.ended_at=None
         self._build_controls()
 
@@ -60,6 +63,15 @@ class Application:
             y=70+i*42; self._label(name,y); self.entries[name]=self._entry(value,y)
         labels=[("Processar",15,340),("Pausar",145,340),("Continuar",275,340),("Cancelar",15,385),("Limpar resultados",210,385)]
         self.buttons={name:pygame_gui.elements.UIButton(pygame.Rect(x,y,120 if name!="Limpar resultados" else 180,35),name,self.manager) for name,x,y in labels}
+        self.route_buttons = {
+            ROUTE_GENETIC: pygame_gui.elements.UIButton(
+                pygame.Rect(1180, 565, 140, 35), "Rota Genética", self.manager
+            ),
+            ROUTE_NEAREST: pygame_gui.elements.UIButton(
+                pygame.Rect(1330, 565, 140, 35), "Rota Vizinho", self.manager
+            ),
+        }
+        self._update_route_buttons()
         # Indicador somente de leitura: o algoritmo ativo é controlado pelo
         # runner, portanto não deve parecer uma opção que o usuário precisa
         # alterar durante o processamento.
@@ -76,16 +88,39 @@ class Application:
 
     def _click(self, button):
         try:
-            if button==self.buttons["Processar"]:
-                self.runner.start(self._config()); self.started_at=time.perf_counter(); self.ended_at=None; self.plot=None; self.plot_generation=-1
+            # Trata primeiro os seletores de rota. A comparação por identidade
+            # evita que o pygame_gui confunda elementos com atributos semelhantes.
+            if button is self.route_buttons[ROUTE_GENETIC]:
+                self._select_route(ROUTE_GENETIC)
+            elif button is self.route_buttons[ROUTE_NEAREST]:
+                self._select_route(ROUTE_NEAREST)
+            elif button==self.buttons["Processar"]:
+                self.runner.start(self._config()); self.started_at=time.perf_counter(); self.ended_at=None; self.plot=None; self.plot_generation=-1; self.selected_route=ROUTE_GENETIC
+                self._update_route_buttons()
             elif button==self.buttons["Pausar"]: self.runner.pause(); self._refresh_plot(True)
             elif button==self.buttons["Continuar"]: self.runner.resume()
             elif button==self.buttons["Cancelar"]:
                 self.runner.cancel(); self._stop_timer(); self._refresh_plot(True)
             elif button==self.buttons["Limpar resultados"]:
-                self.runner.clear(); self.plot=None; self.started_at=None; self.ended_at=None
+                self.runner.clear(); self.plot=None; self.started_at=None; self.ended_at=None; self.selected_route=ROUTE_GENETIC
+                self._update_route_buttons()
         except (ValueError, TypeError) as error:
             self.runner.state=ProcessingState.ERROR; self.runner.message=str(error)
+
+    def _select_route(self, route_name):
+        """Seleciona uma das duas rotas consolidadas da comparação."""
+        if self.runner.comparison and route_name in (ROUTE_GENETIC, ROUTE_NEAREST):
+            self.selected_route=route_name
+            self._update_route_buttons()
+
+    def _update_route_buttons(self):
+        selected = self.selected_route
+        self.route_buttons[ROUTE_GENETIC].set_text(
+            "✓ Rota Genética" if selected == ROUTE_GENETIC else "Rota Genética"
+        )
+        self.route_buttons[ROUTE_NEAREST].set_text(
+            "✓ Rota Vizinho" if selected == ROUTE_NEAREST else "Rota Vizinho"
+        )
 
     def _refresh_plot(self, force=False):
         history=self.runner.history
@@ -102,9 +137,10 @@ class Application:
     def _route(self):
         route=self.runner.best_route
         if self.runner.comparison:
-            # Ao concluir a comparação, mantém visível a melhor rota genética,
-            # que é o resultado principal consolidado.
-            route=self.runner.comparison.genetic.best_run.best_route
+            result = (self.runner.comparison.nearest
+                      if self.selected_route == ROUTE_NEAREST
+                      else self.runner.comparison.genetic)
+            route=result.best_run.best_route
         index={city:i for i,city in enumerate(self.cities)}
         return [self.display_cities[index[city]] for city in route]
 
@@ -115,7 +151,8 @@ class Application:
         elif self.runner.state == ProcessingState.ERROR:
             text = "Algoritmo: não iniciado"
         elif self.runner.comparison:
-            text = "Rota exibida: Algoritmo Genético"
+            name = "Vizinho Mais Próximo" if self.selected_route == ROUTE_NEAREST else "Algoritmo Genético"
+            text = f"Rota exibida: {name}"
         elif self.runner._phase == "nearest":
             text = "Processando: Vizinho Mais Próximo"
         else:
@@ -146,9 +183,11 @@ class Application:
         self._update_algorithm_label()
         self.screen.fill((245,247,250)); pygame.draw.rect(self.screen,(255,255,255),(410,20,770,810)); pygame.draw.rect(self.screen,(255,255,255),(1170,70,315,760))
         route=self._route()
-        if route: draw_paths(self.screen,route,(37,99,235),3)
+        if route:
+            route_color = (234, 88, 12) if self.selected_route == ROUTE_NEAREST and self.runner.comparison else (37,99,235)
+            draw_paths(self.screen,route,route_color,3)
         draw_cities(self.screen,self.display_cities,(220,38,38),5)
-        if self.plot: self.screen.blit(self.plot,(1185,575))
+        if self.plot: self.screen.blit(self.plot,(1185,615))
         for i,line in enumerate(self._lines()): draw_text(self.screen,line,(25,30,40),(1190,85+i*25),self.font)
         self.manager.draw_ui(self.screen); pygame.display.flip()
 
@@ -158,7 +197,9 @@ class Application:
             delta=self.clock.tick(60)/1000
             for event in pygame.event.get():
                 if event.type==pygame.QUIT or (event.type==pygame.KEYDOWN and event.key in (pygame.K_q,pygame.K_ESCAPE)): application_running=False
-                if event.type==pygame_gui.UI_BUTTON_PRESSED: self._click(event.ui_element)
+                is_button_event = (event.type == pygame_gui.UI_BUTTON_PRESSED or
+                                   getattr(event, "user_type", None) == pygame_gui.UI_BUTTON_PRESSED)
+                if is_button_event: self._click(event.ui_element)
                 self.manager.process_events(event)
             self.runner.step(GENERATIONS_PER_FRAME)
             if self.runner.state in (ProcessingState.FINISHED, ProcessingState.CANCELLED, ProcessingState.ERROR):
