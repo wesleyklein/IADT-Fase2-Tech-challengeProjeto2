@@ -1,1 +1,175 @@
-{"id":"hospital_autonomia_insuficiente","name":"Autonomia insuficiente","depot":{"id":"H","name":"Hospital","x_km":0,"y_km":0},"vehicles":[{"id":1,"name":"Van","capacity_kg":100,"autonomy_km":20,"average_speed_kmh":50}],"deliveries":[{"id":1,"name":"Destino remoto","x_km":30,"y_km":0,"weight_kg":10,"priority":"CRITICAL","service_time_minutes":5,"deadline_minutes":60}]}
+{
+  "id": "hospital_autonomia_insuficiente",
+  "name": "Autonomia limitada — rotas urbanas e remotas",
+  "depot": {
+    "id": "HOSPITAL_CENTRAL",
+    "name": "Hospital Central",
+    "x_km": 50.0,
+    "y_km": 50.0
+  },
+  "vehicles": [
+    {
+      "id": 1,
+      "name": "Moto 01",
+      "capacity_kg": 35.0,
+      "autonomy_km": 55.0,
+      "average_speed_kmh": 50.0
+    },
+    {
+      "id": 2,
+      "name": "Utilitário 01",
+      "capacity_kg": 100.0,
+      "autonomy_km": 95.0,
+      "average_speed_kmh": 48.0
+    },
+    {
+      "id": 3,
+      "name": "Van 01",
+      "capacity_kg": 220.0,
+      "autonomy_km": 150.0,
+      "average_speed_kmh": 45.0
+    }
+  ],
+  "deliveries": [
+    {
+      "id": 1,
+      "name": "UPA Centro",
+      "x_km": 55,
+      "y_km": 54,
+      "weight_kg": 8,
+      "priority": "CRITICAL",
+      "service_time_minutes": 6,
+      "deadline_minutes": 45
+    },
+    {
+      "id": 2,
+      "name": "Clínica Norte",
+      "x_km": 43,
+      "y_km": 58,
+      "weight_kg": 10,
+      "priority": "CRITICAL",
+      "service_time_minutes": 7,
+      "deadline_minutes": 55
+    },
+    {
+      "id": 3,
+      "name": "Posto Leste",
+      "x_km": 61,
+      "y_km": 47,
+      "weight_kg": 12,
+      "priority": "HIGH",
+      "service_time_minutes": 5,
+      "deadline_minutes": 80
+    },
+    {
+      "id": 4,
+      "name": "Posto Sul",
+      "x_km": 47,
+      "y_km": 39,
+      "weight_kg": 14,
+      "priority": "HIGH",
+      "service_time_minutes": 6,
+      "deadline_minutes": 90
+    },
+    {
+      "id": 5,
+      "name": "Clínica Nordeste",
+      "x_km": 64,
+      "y_km": 62,
+      "weight_kg": 11,
+      "priority": "HIGH",
+      "service_time_minutes": 8,
+      "deadline_minutes": 105
+    },
+    {
+      "id": 6,
+      "name": "Unidade Oeste",
+      "x_km": 36,
+      "y_km": 45,
+      "weight_kg": 15,
+      "priority": "REGULAR",
+      "service_time_minutes": 5,
+      "deadline_minutes": 145
+    },
+    {
+      "id": 7,
+      "name": "Unidade Rodoviária",
+      "x_km": 78,
+      "y_km": 50,
+      "weight_kg": 16,
+      "priority": "HIGH",
+      "service_time_minutes": 8,
+      "deadline_minutes": 120
+    },
+    {
+      "id": 8,
+      "name": "Unidade Serra",
+      "x_km": 50,
+      "y_km": 82,
+      "weight_kg": 18,
+      "priority": "HIGH",
+      "service_time_minutes": 9,
+      "deadline_minutes": 135
+    },
+    {
+      "id": 9,
+      "name": "Unidade Vale",
+      "x_km": 25,
+      "y_km": 70,
+      "weight_kg": 20,
+      "priority": "REGULAR",
+      "service_time_minutes": 7,
+      "deadline_minutes": 175
+    },
+    {
+      "id": 10,
+      "name": "Unidade Sudeste",
+      "x_km": 75,
+      "y_km": 25,
+      "weight_kg": 17,
+      "priority": "REGULAR",
+      "service_time_minutes": 8,
+      "deadline_minutes": 185
+    },
+    {
+      "id": 11,
+      "name": "Hospital Regional Oeste",
+      "x_km": 15,
+      "y_km": 50,
+      "weight_kg": 22,
+      "priority": "CRITICAL",
+      "service_time_minutes": 10,
+      "deadline_minutes": 115
+    },
+    {
+      "id": 12,
+      "name": "Hospital Regional Sul",
+      "x_km": 50,
+      "y_km": 10,
+      "weight_kg": 24,
+      "priority": "HIGH",
+      "service_time_minutes": 10,
+      "deadline_minutes": 150
+    },
+    {
+      "id": 13,
+      "name": "Base Remota Leste",
+      "x_km": 130,
+      "y_km": 50,
+      "weight_kg": 10,
+      "priority": "CRITICAL",
+      "service_time_minutes": 6,
+      "deadline_minutes": 160
+    },
+    {
+      "id": 14,
+      "name": "Base Remota Norte",
+      "x_km": 50,
+      "y_km": 135,
+      "weight_kg": 12,
+      "priority": "HIGH",
+      "service_time_minutes": 6,
+      "deadline_minutes": 190
+    }
+  ]
+}

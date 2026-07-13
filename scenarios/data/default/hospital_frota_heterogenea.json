@@ -1,1 +1,202 @@
-{"id":"hospital_frota_heterogenea","name":"Frota heterogênea","depot":{"id":"H","name":"Hospital","x_km":10,"y_km":10},"vehicles":[{"id":1,"name":"Moto","capacity_kg":15,"autonomy_km":60,"average_speed_kmh":45},{"id":2,"name":"Utilitário","capacity_kg":60,"autonomy_km":120,"average_speed_kmh":50},{"id":3,"name":"Van","capacity_kg":180,"autonomy_km":250,"average_speed_kmh":48}],"deliveries":[{"id":1,"name":"Posto","x_km":15,"y_km":12,"weight_kg":10,"priority":"CRITICAL","service_time_minutes":5,"deadline_minutes":40},{"id":2,"name":"Clínica","x_km":25,"y_km":20,"weight_kg":40,"priority":"HIGH","service_time_minutes":10,"deadline_minutes":90},{"id":3,"name":"Unidade","x_km":40,"y_km":25,"weight_kg":100,"priority":"REGULAR","service_time_minutes":15,"deadline_minutes":180}]}
+{
+  "id": "hospital_frota_heterogenea",
+  "name": "Frota heterogênea — velocidade, capacidade e alcance",
+  "depot": {
+    "id": "HOSPITAL_CENTRAL",
+    "name": "Hospital Central",
+    "x_km": 50.0,
+    "y_km": 50.0
+  },
+  "vehicles": [
+    {
+      "id": 1,
+      "name": "Moto Express",
+      "capacity_kg": 20.0,
+      "autonomy_km": 90.0,
+      "average_speed_kmh": 65.0
+    },
+    {
+      "id": 2,
+      "name": "Moto Cargo",
+      "capacity_kg": 40.0,
+      "autonomy_km": 120.0,
+      "average_speed_kmh": 55.0
+    },
+    {
+      "id": 3,
+      "name": "Utilitário",
+      "capacity_kg": 120.0,
+      "autonomy_km": 220.0,
+      "average_speed_kmh": 50.0
+    },
+    {
+      "id": 4,
+      "name": "Van",
+      "capacity_kg": 260.0,
+      "autonomy_km": 340.0,
+      "average_speed_kmh": 44.0
+    }
+  ],
+  "deliveries": [
+    {
+      "id": 1,
+      "name": "Amostras UPA Centro",
+      "x_km": 54,
+      "y_km": 53,
+      "weight_kg": 5,
+      "priority": "CRITICAL",
+      "service_time_minutes": 4,
+      "deadline_minutes": 40
+    },
+    {
+      "id": 2,
+      "name": "Hemoderivados Norte",
+      "x_km": 47,
+      "y_km": 59,
+      "weight_kg": 7,
+      "priority": "CRITICAL",
+      "service_time_minutes": 5,
+      "deadline_minutes": 50
+    },
+    {
+      "id": 3,
+      "name": "Medicamento Leste",
+      "x_km": 63,
+      "y_km": 48,
+      "weight_kg": 8,
+      "priority": "CRITICAL",
+      "service_time_minutes": 5,
+      "deadline_minutes": 60
+    },
+    {
+      "id": 4,
+      "name": "Vacinas Sul",
+      "x_km": 50,
+      "y_km": 35,
+      "weight_kg": 10,
+      "priority": "CRITICAL",
+      "service_time_minutes": 6,
+      "deadline_minutes": 70
+    },
+    {
+      "id": 5,
+      "name": "Insumos Clínica A",
+      "x_km": 38,
+      "y_km": 58,
+      "weight_kg": 12,
+      "priority": "HIGH",
+      "service_time_minutes": 6,
+      "deadline_minutes": 100
+    },
+    {
+      "id": 6,
+      "name": "Kits Clínica B",
+      "x_km": 66,
+      "y_km": 63,
+      "weight_kg": 15,
+      "priority": "HIGH",
+      "service_time_minutes": 7,
+      "deadline_minutes": 115
+    },
+    {
+      "id": 7,
+      "name": "Oxigênio portátil",
+      "x_km": 34,
+      "y_km": 42,
+      "weight_kg": 18,
+      "priority": "HIGH",
+      "service_time_minutes": 7,
+      "deadline_minutes": 130
+    },
+    {
+      "id": 8,
+      "name": "Material cirúrgico",
+      "x_km": 58,
+      "y_km": 70,
+      "weight_kg": 20,
+      "priority": "HIGH",
+      "service_time_minutes": 8,
+      "deadline_minutes": 145
+    },
+    {
+      "id": 9,
+      "name": "Caixas de soro",
+      "x_km": 74,
+      "y_km": 52,
+      "weight_kg": 25,
+      "priority": "HIGH",
+      "service_time_minutes": 9,
+      "deadline_minutes": 160
+    },
+    {
+      "id": 10,
+      "name": "Rouparia A",
+      "x_km": 29,
+      "y_km": 63,
+      "weight_kg": 30,
+      "priority": "REGULAR",
+      "service_time_minutes": 10,
+      "deadline_minutes": 220
+    },
+    {
+      "id": 11,
+      "name": "Rouparia B",
+      "x_km": 65,
+      "y_km": 28,
+      "weight_kg": 35,
+      "priority": "REGULAR",
+      "service_time_minutes": 10,
+      "deadline_minutes": 235
+    },
+    {
+      "id": 12,
+      "name": "Material de limpeza",
+      "x_km": 25,
+      "y_km": 45,
+      "weight_kg": 45,
+      "priority": "REGULAR",
+      "service_time_minutes": 10,
+      "deadline_minutes": 250
+    },
+    {
+      "id": 13,
+      "name": "Equipamento de imagem",
+      "x_km": 80,
+      "y_km": 68,
+      "weight_kg": 60,
+      "priority": "REGULAR",
+      "service_time_minutes": 14,
+      "deadline_minutes": 280
+    },
+    {
+      "id": 14,
+      "name": "Cilindros de oxigênio",
+      "x_km": 42,
+      "y_km": 18,
+      "weight_kg": 90,
+      "priority": "HIGH",
+      "service_time_minutes": 15,
+      "deadline_minutes": 240
+    },
+    {
+      "id": 15,
+      "name": "Amostras Base Rural",
+      "x_km": 92,
+      "y_km": 50,
+      "weight_kg": 8,
+      "priority": "CRITICAL",
+      "service_time_minutes": 6,
+      "deadline_minutes": 125
+    },
+    {
+      "id": 16,
+      "name": "Medicamentos Base Serra",
+      "x_km": 50,
+      "y_km": 90,
+      "weight_kg": 10,
+      "priority": "HIGH",
+      "service_time_minutes": 7,
+      "deadline_minutes": 170
+    }
+  ]
+}

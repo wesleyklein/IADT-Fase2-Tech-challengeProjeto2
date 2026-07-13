@@ -1,26 +1,242 @@
 {
-  "id":"hospital_viavel","name":"Hospital Central — Cenário Viável",
-  "depot":{"id":"HOSPITAL_CENTRAL","name":"Hospital Central","x_km":50.0,"y_km":50.0},
-  "vehicles":[
-    {"id":1,"name":"Moto 01","capacity_kg":35.0,"autonomy_km":120.0,"average_speed_kmh":45.0},
-    {"id":2,"name":"Van 01","capacity_kg":180.0,"autonomy_km":260.0,"average_speed_kmh":50.0},
-    {"id":3,"name":"Van 02","capacity_kg":250.0,"autonomy_km":330.0,"average_speed_kmh":48.0}
+  "id": "hospital_viavel",
+  "name": "Hospital Central — cenário viável balanceado",
+  "depot": {
+    "id": "HOSPITAL_CENTRAL",
+    "name": "Hospital Central",
+    "x_km": 50.0,
+    "y_km": 50.0
+  },
+  "vehicles": [
+    {
+      "id": 1,
+      "name": "Moto 01",
+      "capacity_kg": 45.0,
+      "autonomy_km": 140.0,
+      "average_speed_kmh": 55.0
+    },
+    {
+      "id": 2,
+      "name": "Moto 02",
+      "capacity_kg": 45.0,
+      "autonomy_km": 140.0,
+      "average_speed_kmh": 55.0
+    },
+    {
+      "id": 3,
+      "name": "Utilitário 01",
+      "capacity_kg": 120.0,
+      "autonomy_km": 240.0,
+      "average_speed_kmh": 50.0
+    },
+    {
+      "id": 4,
+      "name": "Van 01",
+      "capacity_kg": 260.0,
+      "autonomy_km": 360.0,
+      "average_speed_kmh": 45.0
+    }
   ],
-  "deliveries":[
-    {"id":1,"name":"Unidade Norte","x_km":52,"y_km":65,"weight_kg":12,"priority":"CRITICAL","service_time_minutes":10,"deadline_minutes":50},
-    {"id":2,"name":"Unidade Sul","x_km":47,"y_km":32,"weight_kg":15,"priority":"CRITICAL","service_time_minutes":8,"deadline_minutes":60},
-    {"id":3,"name":"Unidade Leste","x_km":68,"y_km":52,"weight_kg":10,"priority":"CRITICAL","service_time_minutes":9,"deadline_minutes":55},
-    {"id":4,"name":"Clínica A","x_km":58,"y_km":59,"weight_kg":18,"priority":"HIGH","service_time_minutes":7,"deadline_minutes":90},
-    {"id":5,"name":"Clínica B","x_km":39,"y_km":58,"weight_kg":20,"priority":"HIGH","service_time_minutes":6,"deadline_minutes":100},
-    {"id":6,"name":"Clínica C","x_km":61,"y_km":40,"weight_kg":22,"priority":"HIGH","service_time_minutes":8,"deadline_minutes":105},
-    {"id":7,"name":"Clínica D","x_km":42,"y_km":43,"weight_kg":16,"priority":"HIGH","service_time_minutes":5,"deadline_minutes":110},
-    {"id":8,"name":"Clínica E","x_km":55,"y_km":35,"weight_kg":19,"priority":"HIGH","service_time_minutes":6,"deadline_minutes":115},
-    {"id":9,"name":"Posto A","x_km":46,"y_km":62,"weight_kg":14,"priority":"REGULAR","service_time_minutes":5,"deadline_minutes":160},
-    {"id":10,"name":"Posto B","x_km":64,"y_km":64,"weight_kg":21,"priority":"REGULAR","service_time_minutes":5,"deadline_minutes":170},
-    {"id":11,"name":"Posto C","x_km":35,"y_km":49,"weight_kg":13,"priority":"REGULAR","service_time_minutes":4,"deadline_minutes":180},
-    {"id":12,"name":"Posto D","x_km":70,"y_km":45,"weight_kg":25,"priority":"REGULAR","service_time_minutes":7,"deadline_minutes":190},
-    {"id":13,"name":"Posto E","x_km":44,"y_km":36,"weight_kg":17,"priority":"REGULAR","service_time_minutes":5,"deadline_minutes":200},
-    {"id":14,"name":"Posto F","x_km":57,"y_km":70,"weight_kg":23,"priority":"REGULAR","service_time_minutes":6,"deadline_minutes":210},
-    {"id":15,"name":"Posto G","x_km":32,"y_km":60,"weight_kg":20,"priority":"REGULAR","service_time_minutes":5,"deadline_minutes":220}
+  "deliveries": [
+    {
+      "id": 1,
+      "name": "UPA Norte",
+      "x_km": 52,
+      "y_km": 66,
+      "weight_kg": 8,
+      "priority": "CRITICAL",
+      "service_time_minutes": 6,
+      "deadline_minutes": 60
+    },
+    {
+      "id": 2,
+      "name": "UPA Sul",
+      "x_km": 47,
+      "y_km": 33,
+      "weight_kg": 10,
+      "priority": "CRITICAL",
+      "service_time_minutes": 7,
+      "deadline_minutes": 68
+    },
+    {
+      "id": 3,
+      "name": "UPA Leste",
+      "x_km": 68,
+      "y_km": 52,
+      "weight_kg": 12,
+      "priority": "CRITICAL",
+      "service_time_minutes": 7,
+      "deadline_minutes": 75
+    },
+    {
+      "id": 4,
+      "name": "UPA Oeste",
+      "x_km": 32,
+      "y_km": 49,
+      "weight_kg": 9,
+      "priority": "CRITICAL",
+      "service_time_minutes": 6,
+      "deadline_minutes": 82
+    },
+    {
+      "id": 5,
+      "name": "Clínica Nordeste",
+      "x_km": 61,
+      "y_km": 63,
+      "weight_kg": 11,
+      "priority": "CRITICAL",
+      "service_time_minutes": 8,
+      "deadline_minutes": 90
+    },
+    {
+      "id": 6,
+      "name": "Clínica Sudoeste",
+      "x_km": 39,
+      "y_km": 38,
+      "weight_kg": 14,
+      "priority": "CRITICAL",
+      "service_time_minutes": 8,
+      "deadline_minutes": 100
+    },
+    {
+      "id": 7,
+      "name": "Clínica A",
+      "x_km": 58,
+      "y_km": 58,
+      "weight_kg": 18,
+      "priority": "HIGH",
+      "service_time_minutes": 7,
+      "deadline_minutes": 135
+    },
+    {
+      "id": 8,
+      "name": "Clínica B",
+      "x_km": 41,
+      "y_km": 60,
+      "weight_kg": 20,
+      "priority": "HIGH",
+      "service_time_minutes": 7,
+      "deadline_minutes": 145
+    },
+    {
+      "id": 9,
+      "name": "Clínica C",
+      "x_km": 63,
+      "y_km": 41,
+      "weight_kg": 22,
+      "priority": "HIGH",
+      "service_time_minutes": 8,
+      "deadline_minutes": 155
+    },
+    {
+      "id": 10,
+      "name": "Clínica D",
+      "x_km": 37,
+      "y_km": 45,
+      "weight_kg": 16,
+      "priority": "HIGH",
+      "service_time_minutes": 6,
+      "deadline_minutes": 165
+    },
+    {
+      "id": 11,
+      "name": "Clínica E",
+      "x_km": 70,
+      "y_km": 65,
+      "weight_kg": 24,
+      "priority": "HIGH",
+      "service_time_minutes": 9,
+      "deadline_minutes": 180
+    },
+    {
+      "id": 12,
+      "name": "Clínica F",
+      "x_km": 45,
+      "y_km": 27,
+      "weight_kg": 19,
+      "priority": "HIGH",
+      "service_time_minutes": 8,
+      "deadline_minutes": 195
+    },
+    {
+      "id": 13,
+      "name": "Clínica G",
+      "x_km": 73,
+      "y_km": 47,
+      "weight_kg": 21,
+      "priority": "HIGH",
+      "service_time_minutes": 8,
+      "deadline_minutes": 210
+    },
+    {
+      "id": 14,
+      "name": "Posto A",
+      "x_km": 55,
+      "y_km": 72,
+      "weight_kg": 25,
+      "priority": "REGULAR",
+      "service_time_minutes": 7,
+      "deadline_minutes": 240
+    },
+    {
+      "id": 15,
+      "name": "Posto B",
+      "x_km": 29,
+      "y_km": 58,
+      "weight_kg": 28,
+      "priority": "REGULAR",
+      "service_time_minutes": 8,
+      "deadline_minutes": 255
+    },
+    {
+      "id": 16,
+      "name": "Posto C",
+      "x_km": 66,
+      "y_km": 29,
+      "weight_kg": 30,
+      "priority": "REGULAR",
+      "service_time_minutes": 8,
+      "deadline_minutes": 270
+    },
+    {
+      "id": 17,
+      "name": "Posto D",
+      "x_km": 77,
+      "y_km": 57,
+      "weight_kg": 35,
+      "priority": "REGULAR",
+      "service_time_minutes": 10,
+      "deadline_minutes": 285
+    },
+    {
+      "id": 18,
+      "name": "Posto E",
+      "x_km": 36,
+      "y_km": 70,
+      "weight_kg": 26,
+      "priority": "REGULAR",
+      "service_time_minutes": 7,
+      "deadline_minutes": 300
+    },
+    {
+      "id": 19,
+      "name": "Posto F",
+      "x_km": 43,
+      "y_km": 22,
+      "weight_kg": 32,
+      "priority": "REGULAR",
+      "service_time_minutes": 9,
+      "deadline_minutes": 320
+    },
+    {
+      "id": 20,
+      "name": "Posto G",
+      "x_km": 79,
+      "y_km": 38,
+      "weight_kg": 38,
+      "priority": "REGULAR",
+      "service_time_minutes": 10,
+      "deadline_minutes": 340
+    }
   ]
 }

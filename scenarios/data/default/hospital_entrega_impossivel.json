@@ -1,1 +1,155 @@
-{"id":"hospital_entrega_impossivel","name":"Entregas impossíveis","depot":{"id":"H","name":"Hospital","x_km":0,"y_km":0},"vehicles":[{"id":1,"name":"Veículo leve","capacity_kg":20,"autonomy_km":30,"average_speed_kmh":40}],"deliveries":[{"id":1,"name":"Pesada","x_km":2,"y_km":0,"weight_kg":60,"priority":"HIGH","service_time_minutes":5,"deadline_minutes":60},{"id":2,"name":"Remota","x_km":40,"y_km":0,"weight_kg":5,"priority":"CRITICAL","service_time_minutes":5,"deadline_minutes":60}]}
+{
+  "id": "hospital_entrega_impossivel",
+  "name": "Entregas impossíveis — causas mistas",
+  "depot": {
+    "id": "HOSPITAL_CENTRAL",
+    "name": "Hospital Central",
+    "x_km": 50.0,
+    "y_km": 50.0
+  },
+  "vehicles": [
+    {
+      "id": 1,
+      "name": "Moto",
+      "capacity_kg": 25.0,
+      "autonomy_km": 80.0,
+      "average_speed_kmh": 52.0
+    },
+    {
+      "id": 2,
+      "name": "Utilitário",
+      "capacity_kg": 80.0,
+      "autonomy_km": 160.0,
+      "average_speed_kmh": 48.0
+    },
+    {
+      "id": 3,
+      "name": "Van",
+      "capacity_kg": 180.0,
+      "autonomy_km": 260.0,
+      "average_speed_kmh": 45.0
+    }
+  ],
+  "deliveries": [
+    {
+      "id": 1,
+      "name": "UPA Central",
+      "x_km": 55,
+      "y_km": 52,
+      "weight_kg": 8,
+      "priority": "CRITICAL",
+      "service_time_minutes": 5,
+      "deadline_minutes": 50
+    },
+    {
+      "id": 2,
+      "name": "Clínica Norte",
+      "x_km": 46,
+      "y_km": 61,
+      "weight_kg": 12,
+      "priority": "CRITICAL",
+      "service_time_minutes": 6,
+      "deadline_minutes": 65
+    },
+    {
+      "id": 3,
+      "name": "Posto Leste",
+      "x_km": 67,
+      "y_km": 49,
+      "weight_kg": 18,
+      "priority": "HIGH",
+      "service_time_minutes": 7,
+      "deadline_minutes": 90
+    },
+    {
+      "id": 4,
+      "name": "Posto Sul",
+      "x_km": 48,
+      "y_km": 32,
+      "weight_kg": 20,
+      "priority": "HIGH",
+      "service_time_minutes": 7,
+      "deadline_minutes": 105
+    },
+    {
+      "id": 5,
+      "name": "Clínica Oeste",
+      "x_km": 31,
+      "y_km": 55,
+      "weight_kg": 25,
+      "priority": "HIGH",
+      "service_time_minutes": 8,
+      "deadline_minutes": 120
+    },
+    {
+      "id": 6,
+      "name": "Centro Diagnóstico",
+      "x_km": 70,
+      "y_km": 65,
+      "weight_kg": 35,
+      "priority": "REGULAR",
+      "service_time_minutes": 10,
+      "deadline_minutes": 165
+    },
+    {
+      "id": 7,
+      "name": "Unidade Serra",
+      "x_km": 28,
+      "y_km": 30,
+      "weight_kg": 45,
+      "priority": "REGULAR",
+      "service_time_minutes": 10,
+      "deadline_minutes": 190
+    },
+    {
+      "id": 8,
+      "name": "Hospital Municipal",
+      "x_km": 80,
+      "y_km": 42,
+      "weight_kg": 55,
+      "priority": "REGULAR",
+      "service_time_minutes": 12,
+      "deadline_minutes": 220
+    },
+    {
+      "id": 9,
+      "name": "Ressonância Magnética",
+      "x_km": 55,
+      "y_km": 47,
+      "weight_kg": 210,
+      "priority": "CRITICAL",
+      "service_time_minutes": 20,
+      "deadline_minutes": 140
+    },
+    {
+      "id": 10,
+      "name": "Gerador Hospitalar",
+      "x_km": 45,
+      "y_km": 47,
+      "weight_kg": 195,
+      "priority": "HIGH",
+      "service_time_minutes": 18,
+      "deadline_minutes": 160
+    },
+    {
+      "id": 11,
+      "name": "Base Rural Leste",
+      "x_km": 190,
+      "y_km": 50,
+      "weight_kg": 10,
+      "priority": "CRITICAL",
+      "service_time_minutes": 8,
+      "deadline_minutes": 210
+    },
+    {
+      "id": 12,
+      "name": "Base Rural Norte",
+      "x_km": 50,
+      "y_km": 185,
+      "weight_kg": 12,
+      "priority": "HIGH",
+      "service_time_minutes": 8,
+      "deadline_minutes": 240
+    }
+  ]
+}

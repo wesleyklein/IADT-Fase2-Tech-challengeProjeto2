@@ -1,1 +1,135 @@
-{"id":"hospital_capacidade_insuficiente","name":"Capacidade insuficiente","depot":{"id":"H","name":"Hospital","x_km":0,"y_km":0},"vehicles":[{"id":1,"name":"Moto","capacity_kg":20,"autonomy_km":100,"average_speed_kmh":40}],"deliveries":[{"id":1,"name":"Carga pesada","x_km":2,"y_km":2,"weight_kg":50,"priority":"HIGH","service_time_minutes":5,"deadline_minutes":60}]}
+{
+  "id": "hospital_capacidade_insuficiente",
+  "name": "Capacidade insuficiente — excesso individual e acumulado",
+  "depot": {
+    "id": "HOSPITAL_CENTRAL",
+    "name": "Hospital Central",
+    "x_km": 50.0,
+    "y_km": 50.0
+  },
+  "vehicles": [
+    {
+      "id": 1,
+      "name": "Moto Cargo",
+      "capacity_kg": 25.0,
+      "autonomy_km": 140.0,
+      "average_speed_kmh": 50.0
+    },
+    {
+      "id": 2,
+      "name": "Utilitário",
+      "capacity_kg": 70.0,
+      "autonomy_km": 180.0,
+      "average_speed_kmh": 48.0
+    },
+    {
+      "id": 3,
+      "name": "Van",
+      "capacity_kg": 140.0,
+      "autonomy_km": 240.0,
+      "average_speed_kmh": 45.0
+    }
+  ],
+  "deliveries": [
+    {
+      "id": 1,
+      "name": "Medicamentos leves",
+      "x_km": 54,
+      "y_km": 53,
+      "weight_kg": 12,
+      "priority": "CRITICAL",
+      "service_time_minutes": 5,
+      "deadline_minutes": 60
+    },
+    {
+      "id": 2,
+      "name": "Hemoderivados",
+      "x_km": 47,
+      "y_km": 57,
+      "weight_kg": 18,
+      "priority": "CRITICAL",
+      "service_time_minutes": 7,
+      "deadline_minutes": 70
+    },
+    {
+      "id": 3,
+      "name": "Kits cirúrgicos A",
+      "x_km": 60,
+      "y_km": 48,
+      "weight_kg": 22,
+      "priority": "HIGH",
+      "service_time_minutes": 8,
+      "deadline_minutes": 95
+    },
+    {
+      "id": 4,
+      "name": "Kits cirúrgicos B",
+      "x_km": 44,
+      "y_km": 40,
+      "weight_kg": 25,
+      "priority": "HIGH",
+      "service_time_minutes": 8,
+      "deadline_minutes": 105
+    },
+    {
+      "id": 5,
+      "name": "Material de laboratório",
+      "x_km": 65,
+      "y_km": 58,
+      "weight_kg": 30,
+      "priority": "HIGH",
+      "service_time_minutes": 9,
+      "deadline_minutes": 120
+    },
+    {
+      "id": 6,
+      "name": "Caixas de soro",
+      "x_km": 35,
+      "y_km": 55,
+      "weight_kg": 35,
+      "priority": "HIGH",
+      "service_time_minutes": 10,
+      "deadline_minutes": 135
+    },
+    {
+      "id": 7,
+      "name": "Rouparia hospitalar",
+      "x_km": 58,
+      "y_km": 68,
+      "weight_kg": 40,
+      "priority": "REGULAR",
+      "service_time_minutes": 10,
+      "deadline_minutes": 170
+    },
+    {
+      "id": 8,
+      "name": "Material de limpeza",
+      "x_km": 32,
+      "y_km": 42,
+      "weight_kg": 45,
+      "priority": "REGULAR",
+      "service_time_minutes": 8,
+      "deadline_minutes": 185
+    },
+    {
+      "id": 9,
+      "name": "Equipamentos portáteis",
+      "x_km": 70,
+      "y_km": 45,
+      "weight_kg": 55,
+      "priority": "REGULAR",
+      "service_time_minutes": 12,
+      "deadline_minutes": 210
+    },
+    {
+      "id": 10,
+      "name": "Tomógrafo móvel",
+      "x_km": 52,
+      "y_km": 46,
+      "weight_kg": 150,
+      "priority": "CRITICAL",
+      "service_time_minutes": 15,
+      "deadline_minutes": 120
+    }
+  ]
+}

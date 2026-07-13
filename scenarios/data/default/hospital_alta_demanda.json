@@ -1,31 +1,349 @@
-{"id":"hospital_alta_demanda","name":"Alta demanda — 30 entregas","depot":{"id":"H","name":"Hospital Central","x_km":50,"y_km":50},"vehicles":[{"id":1,"name":"Moto 1","capacity_kg":80,"autonomy_km":180,"average_speed_kmh":45},{"id":2,"name":"Moto 2","capacity_kg":80,"autonomy_km":180,"average_speed_kmh":45},{"id":3,"name":"Van 1","capacity_kg":240,"autonomy_km":350,"average_speed_kmh":50},{"id":4,"name":"Van 2","capacity_kg":240,"autonomy_km":350,"average_speed_kmh":50},{"id":5,"name":"Van 3","capacity_kg":300,"autonomy_km":400,"average_speed_kmh":48}],"deliveries":[
-{"id":1,"name":"Unidade 01","x_km":52,"y_km":54,"weight_kg":8,"priority":"CRITICAL","service_time_minutes":5,"deadline_minutes":40},
-{"id":2,"name":"Unidade 02","x_km":57,"y_km":52,"weight_kg":10,"priority":"CRITICAL","service_time_minutes":6,"deadline_minutes":45},
-{"id":3,"name":"Unidade 03","x_km":45,"y_km":56,"weight_kg":12,"priority":"CRITICAL","service_time_minutes":7,"deadline_minutes":50},
-{"id":4,"name":"Unidade 04","x_km":60,"y_km":60,"weight_kg":9,"priority":"CRITICAL","service_time_minutes":5,"deadline_minutes":55},
-{"id":5,"name":"Unidade 05","x_km":39,"y_km":48,"weight_kg":11,"priority":"CRITICAL","service_time_minutes":8,"deadline_minutes":60},
-{"id":6,"name":"Unidade 06","x_km":50,"y_km":37,"weight_kg":10,"priority":"CRITICAL","service_time_minutes":6,"deadline_minutes":65},
-{"id":7,"name":"Unidade 07","x_km":63,"y_km":46,"weight_kg":14,"priority":"HIGH","service_time_minutes":7,"deadline_minutes":80},
-{"id":8,"name":"Unidade 08","x_km":42,"y_km":63,"weight_kg":15,"priority":"HIGH","service_time_minutes":8,"deadline_minutes":85},
-{"id":9,"name":"Unidade 09","x_km":68,"y_km":55,"weight_kg":16,"priority":"HIGH","service_time_minutes":5,"deadline_minutes":90},
-{"id":10,"name":"Unidade 10","x_km":34,"y_km":54,"weight_kg":12,"priority":"HIGH","service_time_minutes":6,"deadline_minutes":95},
-{"id":11,"name":"Unidade 11","x_km":55,"y_km":68,"weight_kg":18,"priority":"HIGH","service_time_minutes":9,"deadline_minutes":100},
-{"id":12,"name":"Unidade 12","x_km":47,"y_km":31,"weight_kg":20,"priority":"HIGH","service_time_minutes":8,"deadline_minutes":105},
-{"id":13,"name":"Unidade 13","x_km":72,"y_km":42,"weight_kg":13,"priority":"HIGH","service_time_minutes":7,"deadline_minutes":110},
-{"id":14,"name":"Unidade 14","x_km":29,"y_km":45,"weight_kg":17,"priority":"HIGH","service_time_minutes":6,"deadline_minutes":115},
-{"id":15,"name":"Unidade 15","x_km":61,"y_km":73,"weight_kg":19,"priority":"HIGH","service_time_minutes":10,"deadline_minutes":120},
-{"id":16,"name":"Unidade 16","x_km":38,"y_km":35,"weight_kg":14,"priority":"REGULAR","service_time_minutes":5,"deadline_minutes":150},
-{"id":17,"name":"Unidade 17","x_km":75,"y_km":62,"weight_kg":21,"priority":"REGULAR","service_time_minutes":7,"deadline_minutes":155},
-{"id":18,"name":"Unidade 18","x_km":25,"y_km":60,"weight_kg":16,"priority":"REGULAR","service_time_minutes":8,"deadline_minutes":160},
-{"id":19,"name":"Unidade 19","x_km":53,"y_km":24,"weight_kg":22,"priority":"REGULAR","service_time_minutes":6,"deadline_minutes":165},
-{"id":20,"name":"Unidade 20","x_km":78,"y_km":49,"weight_kg":15,"priority":"REGULAR","service_time_minutes":5,"deadline_minutes":170},
-{"id":21,"name":"Unidade 21","x_km":31,"y_km":70,"weight_kg":18,"priority":"REGULAR","service_time_minutes":9,"deadline_minutes":175},
-{"id":22,"name":"Unidade 22","x_km":66,"y_km":28,"weight_kg":24,"priority":"REGULAR","service_time_minutes":7,"deadline_minutes":180},
-{"id":23,"name":"Unidade 23","x_km":21,"y_km":39,"weight_kg":12,"priority":"REGULAR","service_time_minutes":6,"deadline_minutes":185},
-{"id":24,"name":"Unidade 24","x_km":70,"y_km":76,"weight_kg":20,"priority":"REGULAR","service_time_minutes":8,"deadline_minutes":190},
-{"id":25,"name":"Unidade 25","x_km":43,"y_km":78,"weight_kg":17,"priority":"REGULAR","service_time_minutes":5,"deadline_minutes":195},
-{"id":26,"name":"Unidade 26","x_km":82,"y_km":35,"weight_kg":23,"priority":"REGULAR","service_time_minutes":10,"deadline_minutes":200},
-{"id":27,"name":"Unidade 27","x_km":18,"y_km":52,"weight_kg":19,"priority":"REGULAR","service_time_minutes":7,"deadline_minutes":205},
-{"id":28,"name":"Unidade 28","x_km":58,"y_km":82,"weight_kg":16,"priority":"REGULAR","service_time_minutes":6,"deadline_minutes":210},
-{"id":29,"name":"Unidade 29","x_km":36,"y_km":22,"weight_kg":18,"priority":"REGULAR","service_time_minutes":8,"deadline_minutes":215},
-{"id":30,"name":"Unidade 30","x_km":84,"y_km":58,"weight_kg":20,"priority":"REGULAR","service_time_minutes":9,"deadline_minutes":220}]}
+{
+  "id": "hospital_alta_demanda",
+  "name": "Alta demanda — 30 entregas",
+  "depot": {
+    "id": "H",
+    "name": "Hospital Central",
+    "x_km": 50,
+    "y_km": 50
+  },
+  "vehicles": [
+    {
+      "id": 1,
+      "name": "Moto 1",
+      "capacity_kg": 80,
+      "autonomy_km": 180,
+      "average_speed_kmh": 45
+    },
+    {
+      "id": 2,
+      "name": "Moto 2",
+      "capacity_kg": 80,
+      "autonomy_km": 180,
+      "average_speed_kmh": 45
+    },
+    {
+      "id": 3,
+      "name": "Van 1",
+      "capacity_kg": 240,
+      "autonomy_km": 350,
+      "average_speed_kmh": 50
+    },
+    {
+      "id": 4,
+      "name": "Van 2",
+      "capacity_kg": 240,
+      "autonomy_km": 350,
+      "average_speed_kmh": 50
+    },
+    {
+      "id": 5,
+      "name": "Van 3",
+      "capacity_kg": 300,
+      "autonomy_km": 400,
+      "average_speed_kmh": 48
+    }
+  ],
+  "deliveries": [
+    {
+      "id": 1,
+      "name": "Unidade 01",
+      "x_km": 52,
+      "y_km": 54,
+      "weight_kg": 8,
+      "priority": "CRITICAL",
+      "service_time_minutes": 5,
+      "deadline_minutes": 40
+    },
+    {
+      "id": 2,
+      "name": "Unidade 02",
+      "x_km": 57,
+      "y_km": 52,
+      "weight_kg": 10,
+      "priority": "CRITICAL",
+      "service_time_minutes": 6,
+      "deadline_minutes": 45
+    },
+    {
+      "id": 3,
+      "name": "Unidade 03",
+      "x_km": 45,
+      "y_km": 56,
+      "weight_kg": 12,
+      "priority": "CRITICAL",
+      "service_time_minutes": 7,
+      "deadline_minutes": 50
+    },
+    {
+      "id": 4,
+      "name": "Unidade 04",
+      "x_km": 60,
+      "y_km": 60,
+      "weight_kg": 9,
+      "priority": "CRITICAL",
+      "service_time_minutes": 5,
+      "deadline_minutes": 55
+    },
+    {
+      "id": 5,
+      "name": "Unidade 05",
+      "x_km": 39,
+      "y_km": 48,
+      "weight_kg": 11,
+      "priority": "CRITICAL",
+      "service_time_minutes": 8,
+      "deadline_minutes": 60
+    },
+    {
+      "id": 6,
+      "name": "Unidade 06",
+      "x_km": 50,
+      "y_km": 37,
+      "weight_kg": 10,
+      "priority": "CRITICAL",
+      "service_time_minutes": 6,
+      "deadline_minutes": 65
+    },
+    {
+      "id": 7,
+      "name": "Unidade 07",
+      "x_km": 63,
+      "y_km": 46,
+      "weight_kg": 14,
+      "priority": "HIGH",
+      "service_time_minutes": 7,
+      "deadline_minutes": 80
+    },
+    {
+      "id": 8,
+      "name": "Unidade 08",
+      "x_km": 42,
+      "y_km": 63,
+      "weight_kg": 15,
+      "priority": "HIGH",
+      "service_time_minutes": 8,
+      "deadline_minutes": 85
+    },
+    {
+      "id": 9,
+      "name": "Unidade 09",
+      "x_km": 68,
+      "y_km": 55,
+      "weight_kg": 16,
+      "priority": "HIGH",
+      "service_time_minutes": 5,
+      "deadline_minutes": 90
+    },
+    {
+      "id": 10,
+      "name": "Unidade 10",
+      "x_km": 34,
+      "y_km": 54,
+      "weight_kg": 12,
+      "priority": "HIGH",
+      "service_time_minutes": 6,
+      "deadline_minutes": 95
+    },
+    {
+      "id": 11,
+      "name": "Unidade 11",
+      "x_km": 55,
+      "y_km": 68,
+      "weight_kg": 18,
+      "priority": "HIGH",
+      "service_time_minutes": 9,
+      "deadline_minutes": 100
+    },
+    {
+      "id": 12,
+      "name": "Unidade 12",
+      "x_km": 47,
+      "y_km": 31,
+      "weight_kg": 20,
+      "priority": "HIGH",
+      "service_time_minutes": 8,
+      "deadline_minutes": 105
+    },
+    {
+      "id": 13,
+      "name": "Unidade 13",
+      "x_km": 72,
+      "y_km": 42,
+      "weight_kg": 13,
+      "priority": "HIGH",
+      "service_time_minutes": 7,
+      "deadline_minutes": 110
+    },
+    {
+      "id": 14,
+      "name": "Unidade 14",
+      "x_km": 29,
+      "y_km": 45,
+      "weight_kg": 17,
+      "priority": "HIGH",
+      "service_time_minutes": 6,
+      "deadline_minutes": 115
+    },
+    {
+      "id": 15,
+      "name": "Unidade 15",
+      "x_km": 61,
+      "y_km": 73,
+      "weight_kg": 19,
+      "priority": "HIGH",
+      "service_time_minutes": 10,
+      "deadline_minutes": 120
+    },
+    {
+      "id": 16,
+      "name": "Unidade 16",
+      "x_km": 38,
+      "y_km": 35,
+      "weight_kg": 14,
+      "priority": "REGULAR",
+      "service_time_minutes": 5,
+      "deadline_minutes": 150
+    },
+    {
+      "id": 17,
+      "name": "Unidade 17",
+      "x_km": 75,
+      "y_km": 62,
+      "weight_kg": 21,
+      "priority": "REGULAR",
+      "service_time_minutes": 7,
+      "deadline_minutes": 155
+    },
+    {
+      "id": 18,
+      "name": "Unidade 18",
+      "x_km": 25,
+      "y_km": 60,
+      "weight_kg": 16,
+      "priority": "REGULAR",
+      "service_time_minutes": 8,
+      "deadline_minutes": 160
+    },
+    {
+      "id": 19,
+      "name": "Unidade 19",
+      "x_km": 53,
+      "y_km": 24,
+      "weight_kg": 22,
+      "priority": "REGULAR",
+      "service_time_minutes": 6,
+      "deadline_minutes": 165
+    },
+    {
+      "id": 20,
+      "name": "Unidade 20",
+      "x_km": 78,
+      "y_km": 49,
+      "weight_kg": 15,
+      "priority": "REGULAR",
+      "service_time_minutes": 5,
+      "deadline_minutes": 170
+    },
+    {
+      "id": 21,
+      "name": "Unidade 21",
+      "x_km": 31,
+      "y_km": 70,
+      "weight_kg": 18,
+      "priority": "REGULAR",
+      "service_time_minutes": 9,
+      "deadline_minutes": 175
+    },
+    {
+      "id": 22,
+      "name": "Unidade 22",
+      "x_km": 66,
+      "y_km": 28,
+      "weight_kg": 24,
+      "priority": "REGULAR",
+      "service_time_minutes": 7,
+      "deadline_minutes": 180
+    },
+    {
+      "id": 23,
+      "name": "Unidade 23",
+      "x_km": 21,
+      "y_km": 39,
+      "weight_kg": 12,
+      "priority": "REGULAR",
+      "service_time_minutes": 6,
+      "deadline_minutes": 185
+    },
+    {
+      "id": 24,
+      "name": "Unidade 24",
+      "x_km": 70,
+      "y_km": 76,
+      "weight_kg": 20,
+      "priority": "REGULAR",
+      "service_time_minutes": 8,
+      "deadline_minutes": 190
+    },
+    {
+      "id": 25,
+      "name": "Unidade 25",
+      "x_km": 43,
+      "y_km": 78,
+      "weight_kg": 17,
+      "priority": "REGULAR",
+      "service_time_minutes": 5,
+      "deadline_minutes": 195
+    },
+    {
+      "id": 26,
+      "name": "Unidade 26",
+      "x_km": 82,
+      "y_km": 35,
+      "weight_kg": 23,
+      "priority": "REGULAR",
+      "service_time_minutes": 10,
+      "deadline_minutes": 200
+    },
+    {
+      "id": 27,
+      "name": "Unidade 27",
+      "x_km": 18,
+      "y_km": 52,
+      "weight_kg": 19,
+      "priority": "REGULAR",
+      "service_time_minutes": 7,
+      "deadline_minutes": 205
+    },
+    {
+      "id": 28,
+      "name": "Unidade 28",
+      "x_km": 58,
+      "y_km": 82,
+      "weight_kg": 16,
+      "priority": "REGULAR",
+      "service_time_minutes": 6,
+      "deadline_minutes": 210
+    },
+    {
+      "id": 29,
+      "name": "Unidade 29",
+      "x_km": 36,
+      "y_km": 22,
+      "weight_kg": 18,
+      "priority": "REGULAR",
+      "service_time_minutes": 8,
+      "deadline_minutes": 215
+    },
+    {
+      "id": 30,
+      "name": "Unidade 30",
+      "x_km": 84,
+      "y_km": 58,
+      "weight_kg": 20,
+      "priority": "REGULAR",
+      "service_time_minutes": 9,
+      "deadline_minutes": 220
+    }
+  ]
+}
